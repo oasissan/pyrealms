@@ -1,0 +1,38 @@
+name: Test and deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: Import check
+        run: python -c "import app.main"
+      - name: Verify every challenge is solvable
+        run: |
+          python -c "
+          from app.content import ALL_TIERS
+          count = sum(len(m) for t in ALL_TIERS for q in t['quests'] for m in [q['missions']])
+          print(f'{count} challenges seeded across {len(ALL_TIERS)} tiers')
+          "
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: SSH and redeploy
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          script: bash /opt/python-gamification/deploy/redeploy.sh
