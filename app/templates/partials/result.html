@@ -1,0 +1,51 @@
+{% if passed %}
+<div class="result pass">
+  <h3>✅ All hidden tests passed!</h3>
+  {% if elapsed %}<p class="muted">Solved in {{ "%.0f"|format(elapsed) }}s.</p>{% endif %}
+  {% if show_gamification and best %}
+  <p class="muted">Best: {{ best.attempts_to_first_pass }} attempt{{ "s" if best.attempts_to_first_pass != 1 }} to first clear{% if best.best_time_seconds %}, fastest {{ "%.0f"|format(best.best_time_seconds) }}s{% endif %}.</p>
+  {% endif %}
+  <p><a href="/quest/{{ challenge.quest.slug }}">← Back to quest</a> · <a href="/">World Map</a></p>
+</div>
+{% else %}
+<div class="result fail">
+  <h3>❌ Not yet — the hidden tests disagree</h3>
+  {% if failing_tests %}
+  <p>Failing: {% for t in failing_tests %}<code>{{ t }}</code>{{ ", " if not loop.last }}{% endfor %}</p>
+  {% endif %}
+  <pre class="output">{{ output }}</pre>
+</div>
+{% endif %}
+
+{# Out-of-band HUD refresh so the XP bar / streak tick instantly #}
+{% with oob = True %}{% include "partials/hud.html" %}{% endwith %}
+
+{% if show_gamification %}
+<div id="toasts" hx-swap-oob="beforeend">
+  {% if xp_result and xp_result.awarded %}
+  <div class="toast xp-toast" x-data x-init="setTimeout(() => $el.remove(), 4000)">
+    ⚡ +{{ xp_result.delta }} XP
+  </div>
+  {% endif %}
+  {% if xp_result and xp_result.leveled_up %}
+  <div class="toast level-toast" x-data x-init="confetti(); setTimeout(() => $el.remove(), 6000)">
+    🎉 LEVEL UP! You are now level {{ xp_result.level_after }}
+  </div>
+  {% endif %}
+  {% if streak_result and streak_result.extended %}
+  <div class="toast" x-data x-init="setTimeout(() => $el.remove(), 4000)">
+    🔥 {{ streak_result.current_streak }}-day streak{{ " (freeze token spent 🧊)" if streak_result.froze }}
+  </div>
+  {% endif %}
+  {% if streak_result and streak_result.freeze_earned %}
+  <div class="toast" x-data x-init="setTimeout(() => $el.remove(), 5000)">
+    🧊 Freeze token earned — your streak survives one missed day
+  </div>
+  {% endif %}
+  {% for badge in new_badges %}
+  <div class="toast badge-toast" x-data x-init="setTimeout(() => $el.remove(), 6000)">
+    {{ badge.icon }} Badge unlocked: <strong>{{ badge.name }}</strong>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}

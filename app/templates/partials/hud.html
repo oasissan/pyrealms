@@ -1,0 +1,19 @@
+<div id="hud" class="hud" {% if oob %}hx-swap-oob="true"{% endif %}>
+  {% if show_gamification %}
+    <div class="hud-item xp-block" title="{{ progress.xp }} XP — {{ progress.next_level_at - progress.xp }} to next level">
+      <span class="level-chip">Lv {{ progress.level }}</span>
+      <div class="xp-bar"><div class="xp-fill" style="width: {{ progress.percent }}%"></div></div>
+      <span class="xp-num">{{ progress.into_level }}/{{ progress.level_span }} XP</span>
+    </div>
+    <div class="hud-item" title="Daily streak (longest: {{ streak.longest_streak }})">
+      🔥 {{ streak.current_streak }}
+    </div>
+    <div class="hud-item" title="Streak freeze tokens — earned every 7-day streak">
+      🧊 {{ freeze_balance }}
+    </div>
+  {% endif %}
+  <button class="ghost-btn" title="Toggle the gamified layer on/off"
+          hx-post="/settings/toggle-gamification" hx-target="#hud" hx-swap="outerHTML">
+    {{ "Hide" if show_gamification else "Show" }} game layer
+  </button>
+</div>

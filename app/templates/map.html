@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>The World Map</h1>
+<p class="muted">Five realms stand between you and interview mastery. Clear each realm's Boss Battle to open the next gate.</p>
+
+{% for ts in map_state %}
+<section class="tier {{ 'locked' if not ts.unlocked }}">
+  <div class="tier-head">
+    <h2>
+      {{ "🔓" if ts.unlocked else "🔒" }} Realm {{ ts.tier.order }} — {{ ts.tier.title }}
+      <span class="subtitle">{{ ts.tier.subtitle }}</span>
+    </h2>
+    {% if show_gamification %}
+    <div class="tier-progress" title="{{ ts.done }}/{{ ts.total }} missions">
+      <div class="xp-bar wide"><div class="xp-fill" style="width: {{ ts.percent }}%"></div></div>
+      <span class="xp-num">{{ ts.done }}/{{ ts.total }}</span>
+    </div>
+    {% endif %}
+  </div>
+
+  {% if not ts.unlocked %}
+    <p class="muted">
+      {% if ts.locked_by_level %}
+        Reach level {{ ts.tier.min_level }} to enter this realm.
+      {% else %}
+        Defeat the previous realm's Boss Battle{% if ts.tier.min_level > 1 %} and reach level {{ ts.tier.min_level }}{% endif %} to enter.
+      {% endif %}
+    </p>
+  {% else %}
+  <div class="quest-grid">
+    {% for qs in ts.quests %}
+    <div class="quest-card {{ 'boss-card' if qs.quest.is_boss_battle }} {{ 'locked' if not qs.unlocked }} {{ 'complete' if qs.complete }}">
+      <h3>
+        {% if qs.unlocked %}<a href="/quest/{{ qs.quest.slug }}">{{ qs.quest.title }}</a>
+        {% else %}🔒 {{ qs.quest.title }}{% endif %}
+      </h3>
+      <p class="muted">{{ qs.quest.description }}</p>
+      <div class="quest-meta">
+        <span>{{ qs.done }}/{{ qs.total }} {{ "✅" if qs.complete }}</span>
+        {% if qs.quest.is_boss_battle and not qs.unlocked %}
+          <span class="muted">Complete every quest in this realm first</span>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+</section>
+{% endfor %}
+
+<section class="tier locked">
+  <h2>🔒 Realm 4 — Systems &amp; Performance <span class="subtitle">The Expert Realm</span></h2>
+  <p class="muted">GIL, asyncio, memory &amp; GC — the interview-crusher tier. Coming in Phase 2.</p>
+</section>
+<section class="tier locked">
+  <h2>🔒 Realm 5 — Hero's Trial <span class="subtitle">The Endgame</span></h2>
+  <p class="muted">Boss builds, the Mock Interview Arena, and the capstone. Coming in Phase 2.</p>
+</section>
+
+{% if show_gamification %}
+<section>
+  <h2>🏅 Badges</h2>
+  <div class="badge-grid">
+    {% for b in badges %}
+    <div class="badge {{ 'earned' if b.earned else 'unearned' }}" title="{{ b.rule.description }}">
+      <span class="badge-icon">{{ b.rule.icon }}</span>
+      <span>{{ b.rule.name if b.earned else "???" }}</span>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+{% endblock %}

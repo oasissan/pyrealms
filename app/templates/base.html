@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Python Zero-to-Hero{% endblock %}</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+  <script defer src="https://unpkg.com/alpinejs@3.14.1/dist/cdn.min.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/">🐍 Python Zero-to-Hero</a>
+    {% include "partials/hud.html" %}
+  </header>
+
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+
+  <div id="toasts"></div>
+
+  <script>
+    // Emoji confetti burst for level-ups — pure client-side flourish.
+    function confetti() {
+      const emoji = ["🎉", "✨", "⭐", "🎊", "🏆"];
+      for (let i = 0; i < 40; i++) {
+        const el = document.createElement("span");
+        el.className = "confetti";
+        el.textContent = emoji[Math.floor(Math.random() * emoji.length)];
+        el.style.left = Math.random() * 100 + "vw";
+        el.style.animationDelay = Math.random() * 0.8 + "s";
+        el.style.fontSize = 14 + Math.random() * 18 + "px";
+        document.body.appendChild(el);
+        setTimeout(() => el.remove(), 3500);
+      }
+    }
+  </script>
+</body>
+</html>

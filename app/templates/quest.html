@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}{{ quest_state.quest.title }} — Python Zero-to-Hero{% endblock %}
+{% block content %}
+<p><a href="/">← World Map</a></p>
+<h1>{{ quest_state.quest.title }}</h1>
+<p class="muted">{{ quest_state.quest.description }}</p>
+
+<ol class="mission-list">
+  {% for cs in quest_state.challenges %}
+  <li class="mission-row {{ 'locked' if not cs.unlocked }}">
+    {% if cs.passed %}✅{% elif cs.unlocked %}▶️{% else %}🔒{% endif %}
+    {% if cs.unlocked %}
+      <a href="/mission/{{ cs.challenge.slug }}">{{ cs.challenge.title }}</a>
+    {% else %}
+      <span>{{ cs.challenge.title }}</span>
+    {% endif %}
+    {% if cs.challenge.kind == 'boss' %}<span class="tag">boss</span>{% endif %}
+    {% if cs.challenge.kind == 'tier_boss' %}<span class="tag boss-tag">⏱ boss battle</span>{% endif %}
+    {% if show_gamification %}<span class="xp-num">+{{ cs.challenge.xp_reward }} XP</span>{% endif %}
+  </li>
+  {% endfor %}
+</ol>
+{% endblock %}

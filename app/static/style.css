@@ -1,0 +1,185 @@
+:root {
+  --bg: #0f1220;
+  --panel: #191d33;
+  --panel-2: #22284a;
+  --text: #e8e9f3;
+  --muted: #9aa0c3;
+  --accent: #f5c542;
+  --accent-2: #7c5cff;
+  --pass: #3ecf8e;
+  --fail: #ff6b6b;
+  --border: #2e3560;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  line-height: 1.55;
+}
+
+main { max-width: 960px; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+h1, h2, h3 { line-height: 1.25; }
+.muted { color: var(--muted); }
+.subtitle { font-size: 0.7em; color: var(--muted); font-weight: normal; margin-left: 0.5rem; }
+
+/* Top bar / HUD */
+.topbar {
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  flex-wrap: wrap;
+  padding: 0.6rem 1rem;
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 10;
+}
+.brand { font-weight: 700; color: var(--text); }
+.hud { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.hud-item { display: flex; align-items: center; gap: 0.4rem; }
+.level-chip {
+  background: var(--accent-2); color: white; border-radius: 999px;
+  padding: 0.1rem 0.6rem; font-weight: 700; font-size: 0.85rem;
+}
+.xp-bar {
+  width: 120px; height: 10px; border-radius: 999px;
+  background: var(--panel-2); border: 1px solid var(--border); overflow: hidden;
+}
+.xp-bar.wide { width: 220px; }
+.xp-fill {
+  height: 100%; border-radius: 999px;
+  background: linear-gradient(90deg, var(--accent-2), var(--accent));
+  transition: width 0.6s ease;
+}
+.xp-num { font-size: 0.8rem; color: var(--muted); }
+
+.ghost-btn {
+  background: transparent; color: var(--muted); border: 1px solid var(--border);
+  border-radius: 6px; padding: 0.25rem 0.6rem; cursor: pointer; font-size: 0.8rem;
+}
+.ghost-btn:hover { color: var(--text); border-color: var(--muted); }
+
+/* Map */
+.tier {
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 12px; padding: 1rem 1.25rem; margin: 1.25rem 0;
+}
+.tier.locked { opacity: 0.6; }
+.tier-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+.tier-progress { display: flex; align-items: center; gap: 0.5rem; }
+
+.quest-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 0.75rem; margin-top: 0.75rem;
+}
+.quest-card {
+  background: var(--panel-2); border: 1px solid var(--border);
+  border-radius: 10px; padding: 0.75rem 1rem;
+}
+.quest-card h3 { margin: 0 0 0.35rem; font-size: 1rem; }
+.quest-card p { margin: 0 0 0.5rem; font-size: 0.85rem; }
+.quest-card.locked { opacity: 0.55; }
+.quest-card.complete { border-color: var(--pass); }
+.quest-card.boss-card { border-color: var(--accent); background: #2a2340; }
+.quest-meta { display: flex; justify-content: space-between; font-size: 0.8rem; }
+
+/* Badges */
+.badge-grid { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+.badge {
+  display: flex; align-items: center; gap: 0.4rem;
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 999px; padding: 0.3rem 0.8rem; font-size: 0.85rem;
+}
+.badge.earned { border-color: var(--accent); }
+.badge.unearned { opacity: 0.45; filter: grayscale(1); }
+.badge-icon { font-size: 1.1rem; }
+
+/* Quest page */
+.mission-list { list-style: none; padding: 0; }
+.mission-row {
+  display: flex; align-items: center; gap: 0.6rem;
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 8px; padding: 0.6rem 1rem; margin: 0.4rem 0;
+}
+.mission-row.locked { opacity: 0.55; }
+.mission-row .xp-num { margin-left: auto; }
+.tag {
+  background: var(--panel-2); border: 1px solid var(--border);
+  border-radius: 4px; padding: 0 0.4rem; font-size: 0.75rem;
+}
+.boss-tag { border-color: var(--accent); color: var(--accent); }
+
+/* Mission page */
+.lesson, .prompt {
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 10px; padding: 0.25rem 1.25rem; margin: 1rem 0;
+}
+.prompt { border-left: 4px solid var(--accent); }
+.lesson pre, .prompt pre, .output {
+  background: #0b0e1a; border: 1px solid var(--border); border-radius: 8px;
+  padding: 0.75rem; overflow-x: auto; font-size: 0.85rem;
+}
+code { background: #0b0e1a; padding: 0.1em 0.35em; border-radius: 4px; font-size: 0.9em; }
+pre code { background: none; padding: 0; }
+
+.editor {
+  width: 100%; background: #0b0e1a; color: var(--text);
+  border: 1px solid var(--border); border-radius: 10px;
+  font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 0.9rem;
+  padding: 0.9rem; tab-size: 4; resize: vertical;
+}
+.editor:focus { outline: 2px solid var(--accent-2); }
+
+.submit-row { display: flex; align-items: center; gap: 1rem; margin: 0.75rem 0; }
+.primary-btn {
+  background: linear-gradient(90deg, var(--accent-2), #a06bff);
+  color: white; border: none; border-radius: 8px;
+  padding: 0.6rem 1.2rem; font-size: 1rem; font-weight: 600; cursor: pointer;
+}
+.primary-btn:hover { filter: brightness(1.1); }
+.htmx-indicator { opacity: 0; transition: opacity 0.2s; }
+.htmx-request .htmx-indicator, .htmx-request.htmx-indicator { opacity: 1; }
+
+.boss-timer {
+  background: #2a2340; border: 1px solid var(--accent);
+  border-radius: 10px; padding: 0.6rem 1rem; margin: 1rem 0;
+}
+.fail-text { color: var(--fail); }
+.personal-best { font-size: 0.9rem; }
+
+/* Results */
+.result { border-radius: 10px; padding: 0.25rem 1.25rem 0.9rem; margin: 1rem 0; }
+.result.pass { background: rgba(62, 207, 142, 0.08); border: 1px solid var(--pass); }
+.result.fail { background: rgba(255, 107, 107, 0.07); border: 1px solid var(--fail); }
+
+/* Toasts */
+#toasts {
+  position: fixed; bottom: 1rem; right: 1rem; z-index: 100;
+  display: flex; flex-direction: column; gap: 0.5rem;
+}
+.toast {
+  background: var(--panel-2); border: 1px solid var(--border);
+  border-radius: 10px; padding: 0.6rem 1rem;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+  animation: slide-in 0.3s ease;
+}
+.xp-toast { border-color: var(--accent-2); }
+.level-toast { border-color: var(--accent); font-weight: 700; }
+.badge-toast { border-color: var(--accent); }
+@keyframes slide-in {
+  from { transform: translateX(120%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+/* Confetti */
+.confetti {
+  position: fixed; top: -2rem; z-index: 200; pointer-events: none;
+  animation: fall 2.6s linear forwards;
+}
+@keyframes fall {
+  to { transform: translateY(110vh) rotate(720deg); opacity: 0.7; }
+}

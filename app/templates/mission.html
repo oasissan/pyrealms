@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}{{ challenge.title }} — Python Zero-to-Hero{% endblock %}
+{% block content %}
+<p><a href="/quest/{{ challenge.quest.slug }}">← {{ challenge.quest.title }}</a></p>
+<h1>{{ challenge.title }} {% if passed %}<span class="tag">✅ cleared</span>{% endif %}</h1>
+
+{% if show_gamification and best %}
+<p class="muted personal-best">
+  🏆 Personal best: solved in {{ best.attempts_to_first_pass }} attempt{{ "s" if best.attempts_to_first_pass != 1 }}{% if best.best_time_seconds %},
+  fastest pass {{ "%.0f"|format(best.best_time_seconds) }}s{% endif %}.
+  Beat your own record!
+</p>
+{% endif %}
+
+{% if challenge.time_limit_seconds %}
+<div class="boss-timer" x-data="{ left: {{ challenge.time_limit_seconds }} }"
+     x-init="setInterval(() => { if (left > 0) left-- }, 1000)">
+  ⏱ Time remaining: <strong x-text="Math.floor(left/60) + ':' + String(left%60).padStart(2,'0')"></strong>
+  <span x-show="left <= 0" class="fail-text">— time's up! Submissions past the limit won't count.</span>
+</div>
+{% endif %}
+
+{% if lesson_html %}
+<section class="lesson">{{ lesson_html | safe }}</section>
+{% endif %}
+
+<section class="prompt">{{ prompt_html | safe }}</section>
+
+<form hx-post="/challenge/{{ challenge.slug }}/submit" hx-target="#result" hx-swap="innerHTML"
+      hx-indicator="#grading-spinner">
+  <input type="hidden" name="started_at" value="{{ started_at }}">
+  <textarea name="code" class="editor" rows="14" spellcheck="false"
+            onkeydown="if(event.key==='Tab'){event.preventDefault();
+              const s=this.selectionStart;
+              this.value=this.value.slice(0,s)+'    '+this.value.slice(this.selectionEnd);
+              this.selectionStart=this.selectionEnd=s+4;}">{{ challenge.starter_code }}</textarea>
+  <div class="submit-row">
+    <button type="submit" class="primary-btn">⚔️ Submit &amp; Run Hidden Tests</button>
+    <span id="grading-spinner" class="htmx-indicator muted">running tests…</span>
+    {% if show_gamification %}<span class="xp-num">worth +{{ challenge.xp_reward }} XP</span>{% endif %}
+  </div>
+</form>
+
+<div id="result"></div>
+{% endblock %}
