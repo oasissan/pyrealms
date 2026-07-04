@@ -3,11 +3,11 @@
 # the latest main and restart the service. Assumes setup-vm.sh already ran.
 set -euo pipefail
 
-APP_DIR="/opt/python-gamification"
+APP_DIR="/opt/pyrealms"
 cd "$APP_DIR"
 
 git fetch origin main
 git reset --hard origin/main
 .venv/bin/pip install -r requirements.txt
-sudo systemctl restart python-gamification
-sudo systemctl --no-pager status python-gamification
+sudo systemctl restart pyrealms
+sudo systemctl --no-pager status pyrealms

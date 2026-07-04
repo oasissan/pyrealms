@@ -6,7 +6,7 @@
 set -euo pipefail
 
 REPO_URL="${1:?Usage: setup-vm.sh <git-clone-url>}"
-APP_DIR="/opt/python-gamification"
+APP_DIR="/opt/pyrealms"
 SERVICE_USER="$(whoami)"
 
 sudo apt-get update -y
@@ -34,9 +34,9 @@ EOF
   echo "Created $APP_DIR/.env — edit it to set APP_USERNAME/APP_PASSWORD, then restart the service."
 fi
 
-sudo tee /etc/systemd/system/python-gamification.service > /dev/null <<EOF
+sudo tee /etc/systemd/system/pyrealms.service > /dev/null <<EOF
 [Unit]
-Description=Python Zero-to-Hero
+Description=PyRealms
 After=network.target
 
 [Service]
@@ -53,7 +53,7 @@ WantedBy=multi-user.target
 EOF
 
 sudo systemctl daemon-reload
-sudo systemctl enable --now python-gamification
+sudo systemctl enable --now pyrealms
 
-echo "Done. Check status with: sudo systemctl status python-gamification"
+echo "Done. Check status with: sudo systemctl status pyrealms"
 echo "Remember to open TCP/8000 in the VCN's Security List (see DEPLOY.md)."

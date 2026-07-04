@@ -27,7 +27,11 @@ jobs:
   deploy:
     needs: test
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+    # Skipped unless a maintainer sets the repo variable DEPLOY_ENABLED=true
+    # (Settings -> Secrets and variables -> Actions -> Variables) and the
+    # VM_HOST/VM_USER/VM_SSH_KEY secrets from DEPLOY.md. Keeps CI green for
+    # forks/contributors who haven't set up a deploy target.
+    if: github.ref == 'refs/heads/main' && vars.DEPLOY_ENABLED == 'true'
     steps:
       - name: SSH and redeploy
         uses: appleboy/ssh-action@v1.0.3
@@ -35,4 +39,4 @@ jobs:
           host: ${{ secrets.VM_HOST }}
           username: ${{ secrets.VM_USER }}
           key: ${{ secrets.VM_SSH_KEY }}
-          script: bash /opt/python-gamification/deploy/redeploy.sh
+          script: bash /opt/pyrealms/deploy/redeploy.sh

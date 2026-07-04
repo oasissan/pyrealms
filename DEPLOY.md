@@ -1,6 +1,6 @@
 # Deploying to Oracle Cloud "Always Free"
 
-This gets Python Zero-to-Hero running on a real, always-on VM at no cost,
+This gets PyRealms running on a real, always-on VM at no cost,
 with `git push` to `main` auto-deploying via GitHub Actions.
 
 **I can't do the account/VM creation for you** — it requires your identity,
@@ -43,7 +43,7 @@ List** → Add Ingress Rule:
 ## 4. Push this repo to GitHub (if you haven't already)
 
 ```bash
-gh repo create python-gamification --source=. --public --push
+gh repo create pyrealms --source=. --public --push
 ```
 
 ## 5. SSH in and run the bootstrap script
@@ -51,12 +51,12 @@ gh repo create python-gamification --source=. --public --push
 ```bash
 chmod 400 /path/to/downloaded-key.pem
 ssh -i /path/to/downloaded-key.pem ubuntu@<vm-public-ip>
-curl -fsSL https://raw.githubusercontent.com/<you>/<repo>/main/deploy/setup-vm.sh \
-  | bash -s -- https://github.com/<you>/<repo>.git
+curl -fsSL https://raw.githubusercontent.com/oasissan/pyrealms/main/deploy/setup-vm.sh \
+  | bash -s -- https://github.com/oasissan/pyrealms.git
 ```
 
-This installs Python, clones the repo to `/opt/python-gamification`,
-creates a venv, and starts it as a systemd service (`python-gamification`)
+This installs Python, clones the repo to `/opt/pyrealms`,
+creates a venv, and starts it as a systemd service (`pyrealms`)
 bound to `0.0.0.0:8000`.
 
 ## 6. Verify it's up
@@ -79,7 +79,7 @@ reinstall + restart the service) if it passes.
 
 ```bash
 ssh -i /path/to/key.pem ubuntu@<vm-public-ip>
-nano /opt/python-gamification/.env
+nano /opt/pyrealms/.env
 ```
 
 Uncomment and set:
@@ -90,7 +90,7 @@ APP_PASSWORD=something-only-you-know
 
 Then:
 ```bash
-sudo systemctl restart python-gamification
+sudo systemctl restart pyrealms
 ```
 
 Every route now requires that Basic Auth credential.
@@ -99,16 +99,16 @@ Every route now requires that Basic Auth credential.
 
 ```bash
 ssh -i /path/to/key.pem ubuntu@<vm-public-ip>
-bash /opt/python-gamification/deploy/redeploy.sh
+bash /opt/pyrealms/deploy/redeploy.sh
 ```
 
 ## Resetting progress
 
-The SQLite file lives at `/opt/python-gamification/app.db` on the VM. Stop
+The SQLite file lives at `/opt/pyrealms/app.db` on the VM. Stop
 the service, delete it, and restart to reseed from scratch:
 
 ```bash
-sudo systemctl stop python-gamification
-rm /opt/python-gamification/app.db
-sudo systemctl start python-gamification
+sudo systemctl stop pyrealms
+rm /opt/pyrealms/app.db
+sudo systemctl start pyrealms
 ```

@@ -18,7 +18,7 @@ async def lifespan(app: FastAPI):
     yield
 
 
-app = FastAPI(title="Python Zero-to-Hero", lifespan=lifespan)
+app = FastAPI(title="PyRealms", lifespan=lifespan)
 app.add_middleware(BasicAuthMiddleware)
 app.mount(
     "/static",
