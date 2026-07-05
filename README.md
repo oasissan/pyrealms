@@ -55,8 +55,13 @@ reset your progress and reseed from scratch.
   since there's no leaderboard, you compete against your own past runs
 - **One-click toggle** to hide the entire gamified layer if you just want
   the curriculum
+- **Gemini Copilot AI Chatbot** — A built-in coding assistant that helps explain challenges, debug code snippets, and answer programming questions.
+  - **Free of Cost**: Mimics your browser-session Google Gemini login credentials.
+  - **One-Click Setup**: Automatically detects and decrypts active session cookies (`__Secure-1PSID`/`__Secure-1PSIDTS`) from Chrome, Edge, or Firefox.
+  - **Context-Aware**: Any question you ask automatically bundles details about the current mission, starter code, and your editor's live code.
 - No accounts, no leaderboards, no monetization — see the design spec's
   ethics check for why
+
 
 ## How it works
 
@@ -80,6 +85,8 @@ reset your progress and reseed from scratch.
 - **Progress/unlocks** — `app/services/progress.py` computes what's
   unlocked on every request from submission history — no separate
   "progress" state to drift out of sync.
+- **Gemini Copilot** — `app/services/gemini_web.py` houses a custom browser session client `GeminiWebClient` which extracts CSRF tokens from the web frontend of Gemini and sends authenticated chat messages. `app/routers/chatbot.py` handles auto-detecting cookies from browser caches on Windows (Chrome, Edge, Firefox), saving configs, and routing messages.
+
 
 ## Deploying it yourself
 

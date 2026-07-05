@@ -86,7 +86,9 @@
     });
     ta.insertAdjacentElement("beforebegin", view.dom);
     view.dom.classList.add("cm-host");
+    ta.cmView = view;
     ta.style.display = "none";
+
     // htmx serializes the (hidden) textarea, so inject the live doc instead.
     form.addEventListener("htmx:configRequest", (e) => {
       e.detail.parameters.code = view.state.doc.toString();

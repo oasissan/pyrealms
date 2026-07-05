@@ -166,3 +166,6 @@ class Settings(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     show_gamification: Mapped[bool] = mapped_column(Boolean, default=True)
+    gemini_session_cookie: Mapped[str | None] = mapped_column(String, nullable=True)
+    gemini_cookie_ts: Mapped[str | None] = mapped_column(String, nullable=True)
+

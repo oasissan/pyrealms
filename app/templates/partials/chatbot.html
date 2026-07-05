@@ -1,0 +1,476 @@
+<div id="chatbot-widget" class="chatbot-container" x-data="chatbotState()" x-init="init()">
+  <!-- Floating Launcher Button -->
+  <button class="chatbot-launcher" :class="{ 'pulse': !isConfigured }" @click="toggle()" title="Toggle Gemini Copilot">
+    <span x-show="!isOpen">🤖</span>
+    <span x-show="isOpen">✕</span>
+  </button>
+
+  <!-- Main Chat Panel -->
+  <div class="chatbot-panel" :class="{ 'open': isOpen }">
+    <!-- Header -->
+    <div class="chatbot-header">
+      <div class="chatbot-title">
+        <span>🔮 Gemini Copilot</span>
+      </div>
+      <div class="chatbot-header-actions">
+        <button class="chatbot-header-btn" title="AI Settings" @click="showSettings = !showSettings">
+          ⚙️
+        </button>
+        <button class="chatbot-header-btn" title="Close" @click="toggle()">
+          ✕
+        </button>
+      </div>
+    </div>
+
+    <!-- Chat Screen -->
+    <div class="chatbot-screen" x-show="!showSettings">
+      <div class="chatbot-messages" x-ref="messagesContainer">
+        <!-- Loop messages -->
+        <template x-for="(msg, idx) in messages" :key="idx">
+          <div class="chat-bubble-wrapper" :class="msg.sender">
+            <div class="chat-bubble-sender" x-text="msg.sender === 'user' ? 'You' : 'Gemini'"></div>
+            <div class="chat-bubble" x-html="msg.html"></div>
+          </div>
+        </template>
+
+        <!-- Empty State -->
+        <div class="chatbot-empty-state" x-show="messages.length === 0">
+          <div class="chatbot-empty-icon">🔮</div>
+          <h3>Gemini Copilot</h3>
+          <p>Ask a programming question, or use the context actions below on coding pages.</p>
+        </div>
+
+        <!-- Typing indicator -->
+        <div class="chat-bubble-wrapper bot" x-show="isTyping">
+          <div class="chat-bubble-sender">Gemini</div>
+          <div class="chat-bubble">
+            <div class="typing-indicator">
+              <span class="typing-dot"></span>
+              <span class="typing-dot"></span>
+              <span class="typing-dot"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Actions Bar -->
+      <div class="chatbot-actions-bar">
+        <template x-if="isOnMissionPage() && missionDetails">
+          <button class="chatbot-pill" @click="explainMission()">
+            💡 Explain Mission
+          </button>
+        </template>
+        <template x-if="isOnMissionPage() && missionDetails">
+          <button class="chatbot-pill" @click="debugCode()">
+            🔍 Debug Code
+          </button>
+        </template>
+        <template x-if="messages.length > 0">
+          <button class="chatbot-pill" @click="clearChat()">
+            ✨ Clear Chat
+          </button>
+        </template>
+      </div>
+
+      <!-- Input Box -->
+      <div class="chatbot-input-area">
+        <textarea class="chatbot-textarea" 
+                  x-model="inputMessage" 
+                  placeholder="Ask a question..."
+                  @keydown.enter.prevent="if(!event.shiftKey) sendMessage()"
+                  rows="1"></textarea>
+        <button class="chatbot-send-btn" @click="sendMessage()" :disabled="!inputMessage.trim() || isTyping">
+          ➔
+        </button>
+      </div>
+    </div>
+
+    <!-- Settings Screen -->
+    <div class="chatbot-screen" x-show="showSettings">
+      <div class="chatbot-settings">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <button class="chatbot-header-btn" style="font-size: 16px;" @click="showSettings = false">
+            ←
+          </button>
+          <h3 class="chatbot-settings-title">Gemini Session Configuration</h3>
+        </div>
+
+        <p class="chatbot-help-text" style="margin-top: 0;">
+          To use the free chatbot, you need to authenticate with Gemini Web using your browser's session cookies.
+        </p>
+
+        <div class="chatbot-form-group">
+          <label class="chatbot-label">__Secure-1PSID Cookie</label>
+          <input class="chatbot-input" type="password" x-model="cookiePSID" placeholder="Enter __Secure-1PSID">
+        </div>
+
+        <div class="chatbot-form-group">
+          <label class="chatbot-label">__Secure-1PSIDTS Cookie (Optional)</label>
+          <input class="chatbot-input" type="password" x-model="cookiePSIDTS" placeholder="Enter __Secure-1PSIDTS">
+        </div>
+
+        <button class="chatbot-btn" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); margin-bottom: 8px;" @click="autodetectCookies()" :disabled="isDetecting">
+          <span x-show="!isDetecting">🚀 Auto-detect from Browsers</span>
+          <span x-show="isDetecting">Detecting cookies...</span>
+        </button>
+
+        <button class="chatbot-btn" @click="saveSettings()">
+          Save & Verify Connection
+        </button>
+
+        <div class="chatbot-help-text">
+          <strong>How to get cookies:</strong>
+          <ol>
+            <li>Go to <a href="https://gemini.google.com" target="_blank" style="color: var(--accent);">gemini.google.com</a> and sign in.</li>
+            <li>Press F12 to open Developer Tools.</li>
+            <li>Go to <strong>Application</strong> -> <strong>Storage</strong> -> <strong>Cookies</strong> -> <strong>https://gemini.google.com</strong>.</li>
+            <li>Find and copy the values for <strong>__Secure-1PSID</strong> and <strong>__Secure-1PSIDTS</strong>.</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function chatbotState() {
+  return {
+    isOpen: false,
+    showSettings: false,
+    isConfigured: false,
+    isTyping: false,
+    isDetecting: false,
+    inputMessage: '',
+    cookiePSID: '',
+    cookiePSIDTS: '',
+    messages: [],
+    conversationId: '',
+    parentMessageId: '',
+    missionDetails: null,
+
+    init() {
+      // Fetch if settings are already configured
+      fetch('/api/chatbot/settings')
+        .then(res => res.json())
+        .then(data => {
+          this.isConfigured = data.configured;
+          if (data.configured) {
+            this.cookiePSID = data.gemini_session_cookie || '';
+            this.cookiePSIDTS = data.gemini_cookie_ts || '';
+          } else {
+            // Automatically open settings if not configured
+            this.showSettings = true;
+          }
+        })
+        .catch(err => console.error('Error fetching chatbot settings:', err));
+
+      // Load saved conversation history from localStorage if exists
+      const saved = localStorage.getItem('pyrealms_chat_history');
+      const savedConv = localStorage.getItem('pyrealms_chat_conv_id');
+      const savedParent = localStorage.getItem('pyrealms_chat_parent_id');
+      if (saved) {
+        try {
+          this.messages = JSON.parse(saved);
+        } catch(e) {}
+      }
+      if (savedConv) this.conversationId = savedConv;
+      if (savedParent) this.parentMessageId = savedParent;
+
+      // Load mission details if on a mission page
+      this.loadMissionDetails();
+    },
+
+    loadMissionDetails() {
+      if (this.isOnMissionPage()) {
+        const slug = this.getMissionSlug();
+        fetch(`/api/chatbot/challenge/${slug}`)
+          .then(res => {
+            if (!res.ok) throw new Error('Could not fetch mission details');
+            return res.json();
+          })
+          .then(data => {
+            this.missionDetails = data;
+          })
+          .catch(err => {
+            console.error('Error loading mission details:', err);
+            this.missionDetails = null;
+          });
+      } else {
+        this.missionDetails = null;
+      }
+    },
+
+    saveHistory() {
+      localStorage.setItem('pyrealms_chat_history', JSON.stringify(this.messages));
+      localStorage.setItem('pyrealms_chat_conv_id', this.conversationId);
+      localStorage.setItem('pyrealms_chat_parent_id', this.parentMessageId);
+    },
+
+    clearChat() {
+      this.messages = [];
+      this.conversationId = '';
+      this.parentMessageId = '';
+      this.saveHistory();
+    },
+
+    isOnMissionPage() {
+      return window.location.pathname.startsWith('/mission/');
+    },
+
+    getMissionSlug() {
+      const parts = window.location.pathname.split('/');
+      return parts[parts.length - 1] || '';
+    },
+
+    toggle() {
+      this.isOpen = !this.isOpen;
+      if (this.isOpen) {
+        // Always try to reload in case they changed pages
+        this.loadMissionDetails();
+        this.scrollToBottom();
+      }
+    },
+
+    scrollToBottom() {
+      this.$nextTick(() => {
+        const el = this.$refs.messagesContainer;
+        if (el) {
+          el.scrollTop = el.scrollHeight;
+        }
+      });
+    },
+
+    sendMessage() {
+      const text = this.inputMessage.trim();
+      if (!text) return;
+      
+      this.inputMessage = '';
+      this.addMessage('user', text);
+      this.scrollToBottom();
+      
+      if (!this.isConfigured) {
+        this.addMessage('bot', '', 'Please configure your Gemini session cookies in settings first!');
+        this.scrollToBottom();
+        return;
+      }
+      
+      this.isTyping = true;
+
+      // Build context-enriched prompt if working on a mission
+      let promptToSend = text;
+      if (this.missionDetails) {
+        const editorTa = document.getElementById('code-editor');
+        const userCode = editorTa 
+          ? (editorTa.cmView ? editorTa.cmView.state.doc.toString() : editorTa.value) 
+          : '';
+        
+        promptToSend = `[Context: The user is working on the Python coding challenge "${this.missionDetails.title}".
+Here is the challenge description:
+${this.missionDetails.prompt_md}
+
+Here is the starter code:
+\`\`\`python
+${this.missionDetails.starter_code}
+\`\`\`
+
+Here is their current editor code:
+\`\`\`python
+${userCode}
+\`\`\`
+]
+
+User's Question:
+${text}`;
+      }
+      
+      fetch('/api/chatbot/message', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: promptToSend,
+          conversation_id: this.conversationId,
+          parent_message_id: this.parentMessageId
+        })
+      })
+      .then(res => {
+        if (!res.ok) {
+          return res.json().then(err => { throw new Error(err.detail || 'Failed to send message') });
+        }
+        return res.json();
+      })
+      .then(data => {
+        this.isTyping = false;
+        this.conversationId = data.conversation_id || '';
+        this.parentMessageId = data.parent_message_id || '';
+        this.addMessage('bot', data.reply, data.html);
+        this.scrollToBottom();
+        this.saveHistory();
+      })
+      .catch(err => {
+        this.isTyping = false;
+        this.addMessage('bot', '', `<span class="fail-text">⚠️ Error: ${err.message}</span>`);
+        this.scrollToBottom();
+      });
+    },
+
+    addMessage(sender, text, html = '') {
+      this.messages.push({ sender, text, html: html || text });
+    },
+
+    saveSettings() {
+      if (!this.cookiePSID.trim()) {
+        this.showToast('__Secure-1PSID cookie is required!', 'error');
+        return;
+      }
+      
+      fetch('/api/chatbot/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          gemini_session_cookie: this.cookiePSID,
+          gemini_cookie_ts: this.cookiePSIDTS
+        })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          this.isConfigured = true;
+          this.showSettings = false;
+          this.loadMissionDetails();
+          this.showToast('Settings saved successfully!', 'success');
+        } else {
+          this.showToast('Failed to save settings', 'error');
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        this.showToast('Network error saving settings', 'error');
+      });
+    },
+
+    autodetectCookies() {
+      this.isDetecting = true;
+      fetch('/api/chatbot/autodetect', {
+        method: 'POST',
+      })
+      .then(res => {
+        if (!res.ok) {
+          return res.json().then(err => { throw new Error(err.detail || 'Auto-detection failed') });
+        }
+        return res.json();
+      })
+      .then(data => {
+        this.isDetecting = false;
+        if (data.success) {
+          this.isConfigured = true;
+          this.cookiePSID = data.gemini_session_cookie;
+          this.cookiePSIDTS = data.gemini_cookie_ts;
+          this.showSettings = false;
+          this.loadMissionDetails();
+          this.showToast(`Auto-detected cookies from ${data.browser}!`, 'success');
+        }
+      })
+      .catch(err => {
+        this.isDetecting = false;
+        this.showToast(err.message, 'error');
+      });
+    },
+
+    showToast(message, type = 'success') {
+      const container = document.getElementById('toasts');
+      if (!container) return;
+      const toast = document.createElement('div');
+      toast.className = `toast ${type === 'success' ? 'xp-toast' : 'level-toast'}`;
+      toast.innerText = message;
+      container.appendChild(toast);
+      setTimeout(() => toast.remove(), 4000);
+    },
+
+    explainMission() {
+      if (!this.missionDetails) return;
+      
+      const prompt = `You are a helpful programming tutor. Explain the following coding challenge called "${this.missionDetails.title}" to the student. Provide conceptual hints and outline how they should approach it, but do NOT give the direct python code solution.\n\nHere is the challenge description:\n${this.missionDetails.prompt_md}`;
+      
+      this.addMessage('user', `💡 Explain the mission: "${this.missionDetails.title}"`);
+      this.scrollToBottom();
+      this.isTyping = true;
+      
+      fetch('/api/chatbot/message', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: prompt,
+          conversation_id: this.conversationId,
+          parent_message_id: this.parentMessageId
+        })
+      })
+      .then(res => {
+        if (!res.ok) return res.json().then(err => { throw new Error(err.detail || 'Failed to send message') });
+        return res.json();
+      })
+      .then(data => {
+        this.isTyping = false;
+        this.conversationId = data.conversation_id || '';
+        this.parentMessageId = data.parent_message_id || '';
+        this.addMessage('bot', data.reply, data.html);
+        this.scrollToBottom();
+        this.saveHistory();
+      })
+      .catch(err => {
+        this.isTyping = false;
+        this.addMessage('bot', '', `<span class="fail-text">⚠️ Error: ${err.message}</span>`);
+        this.scrollToBottom();
+      });
+    },
+
+    debugCode() {
+      if (!this.missionDetails) return;
+      
+      const editorTa = document.getElementById('code-editor');
+      if (!editorTa) return;
+      
+      const userCode = editorTa.cmView 
+        ? editorTa.cmView.state.doc.toString() 
+        : editorTa.value;
+        
+      if (!userCode.trim()) {
+        this.showToast('Please type some code in the editor first!', 'error');
+        return;
+      }
+      
+      const prompt = `You are a friendly python tutor. The student is working on the challenge "${this.missionDetails.title}" and needs help debugging their code.\n\nHere is the challenge description:\n${this.missionDetails.prompt_md}\n\nHere is the student's current code:\n\`\`\`python\n${userCode}\n\`\`\`\n\nPlease point out any syntax errors, logic errors, or edge cases they missed. Explain WHY it is incorrect and guide them to the fix, but do NOT write the corrected code for them. Keep your tone encouraging and educational.`;
+      
+      this.addMessage('user', `🔍 Debug my code for "${this.missionDetails.title}"`);
+      this.scrollToBottom();
+      this.isTyping = true;
+      
+      fetch('/api/chatbot/message', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: prompt,
+          conversation_id: this.conversationId,
+          parent_message_id: this.parentMessageId
+        })
+      })
+      .then(res => {
+        if (!res.ok) return res.json().then(err => { throw new Error(err.detail || 'Failed to send message') });
+        return res.json();
+      })
+      .then(data => {
+        this.isTyping = false;
+        this.conversationId = data.conversation_id || '';
+        this.parentMessageId = data.parent_message_id || '';
+        this.addMessage('bot', data.reply, data.html);
+        this.scrollToBottom();
+        this.saveHistory();
+      })
+      .catch(err => {
+        this.isTyping = false;
+        this.addMessage('bot', '', `<span class="fail-text">⚠️ Error: ${err.message}</span>`);
+        this.scrollToBottom();
+      });
+    }
+  };
+}
+</script>
