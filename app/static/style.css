@@ -134,6 +134,18 @@ pre code { background: none; padding: 0; }
 }
 .editor:focus { outline: 2px solid var(--accent-2); }
 
+/* CodeMirror host (replaces the textarea when the module loads) */
+.cm-host {
+  border: 1px solid var(--border); border-radius: 10px;
+  overflow: hidden; margin-bottom: 0.25rem;
+}
+.cm-host.cm-editor { min-height: 20rem; font-size: 0.9rem; }
+.cm-host.cm-editor.cm-focused { outline: 2px solid var(--accent-2); }
+.cm-host .cm-scroller {
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+  line-height: 1.5;
+}
+
 .submit-row { display: flex; align-items: center; gap: 1rem; margin: 0.75rem 0; }
 .primary-btn {
   background: linear-gradient(90deg, var(--accent-2), #a06bff);
@@ -155,6 +167,46 @@ pre code { background: none; padding: 0; }
 .result { border-radius: 10px; padding: 0.25rem 1.25rem 0.9rem; margin: 1rem 0; }
 .result.pass { background: rgba(62, 207, 142, 0.08); border: 1px solid var(--pass); }
 .result.fail { background: rgba(255, 107, 107, 0.07); border: 1px solid var(--fail); }
+
+.test-summary { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.test-summary h3 { margin: 0.75rem 0; }
+.test-summary .xp-fill { background: linear-gradient(90deg, var(--pass), #7fe8bd); }
+
+.chip-row { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0.5rem 0 0.75rem; }
+.test-chip {
+  border-radius: 999px; padding: 0.15rem 0.7rem; font-size: 0.8rem;
+  border: 1px solid var(--border); background: var(--panel);
+}
+.test-chip.pass { border-color: var(--pass); color: var(--pass); }
+
+.test-card {
+  background: var(--panel); border: 1px solid var(--border);
+  border-left: 4px solid var(--fail);
+  border-radius: 10px; padding: 0.6rem 1rem 0.75rem; margin: 0.6rem 0;
+}
+.test-card-head {
+  font-weight: 700; color: var(--fail); margin-bottom: 0.4rem;
+  font-variant: small-caps; letter-spacing: 0.03em;
+}
+.kv { margin: 0; display: grid; gap: 0.3rem; }
+.kv div { display: flex; align-items: baseline; gap: 0.75rem; }
+.kv dt {
+  width: 5.5rem; flex-shrink: 0; text-align: right;
+  color: var(--muted); font-size: 0.8rem; text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.kv dd { margin: 0; overflow-x: auto; }
+.kv code { font-size: 0.9rem; }
+.val-expected { color: var(--pass); }
+.val-got { color: var(--fail); }
+
+.crash p { margin: 0.25rem 0 0.5rem; }
+.code-line {
+  background: #0b0e1a; border: 1px solid var(--border); border-radius: 8px;
+  padding: 0.6rem 0.75rem; overflow-x: auto; font-size: 0.85rem;
+  margin: 0.4rem 0;
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+}
 
 /* Toasts */
 #toasts {

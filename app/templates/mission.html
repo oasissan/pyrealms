@@ -29,7 +29,7 @@
 <form hx-post="/challenge/{{ challenge.slug }}/submit" hx-target="#result" hx-swap="innerHTML"
       hx-indicator="#grading-spinner">
   <input type="hidden" name="started_at" value="{{ started_at }}">
-  <textarea name="code" class="editor" rows="14" spellcheck="false"
+  <textarea name="code" id="code-editor" class="editor" rows="14" spellcheck="false"
             onkeydown="if(event.key==='Tab'){event.preventDefault();
               const s=this.selectionStart;
               this.value=this.value.slice(0,s)+'    '+this.value.slice(this.selectionEnd);
@@ -42,4 +42,39 @@
 </form>
 
 <div id="result"></div>
+
+<script type="module">
+  // Upgrade the plain textarea to CodeMirror 6 (syntax highlighting, line
+  // numbers, auto-indent), served as a single self-hosted bundle
+  // (/static/codemirror.min.js — see CONTRIBUTING for how it's built).
+  // Progressive enhancement: on any load failure the textarea stays
+  // visible and fully functional.
+  try {
+    const cm = await import("/static/codemirror.min.js");
+    const ta = document.getElementById("code-editor");
+    const form = ta.form;
+    const view = new cm.EditorView({
+      doc: ta.value,
+      extensions: [
+        cm.basicSetup,
+        cm.keymap.of([
+          { key: "Mod-Enter", run: () => { form.requestSubmit(); return true; } },
+          cm.indentWithTab,
+        ]),
+        cm.indentUnit.of("    "),
+        cm.python(),
+        cm.oneDark,
+      ],
+    });
+    ta.insertAdjacentElement("beforebegin", view.dom);
+    view.dom.classList.add("cm-host");
+    ta.style.display = "none";
+    // htmx serializes the (hidden) textarea, so inject the live doc instead.
+    form.addEventListener("htmx:configRequest", (e) => {
+      e.detail.parameters.code = view.state.doc.toString();
+    });
+  } catch (err) {
+    console.warn("CodeMirror failed to load; using the plain textarea.", err);
+  }
+</script>
 {% endblock %}

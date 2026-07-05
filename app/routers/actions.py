@@ -86,6 +86,7 @@ def submit_challenge(
             "challenge": challenge,
             "passed": passed,
             "output": submission.output,
+            "grade": result,
             "failing_tests": result.failing_tests if result else [],
             "xp_result": xp_result,
             "streak_result": streak_result,

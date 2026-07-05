@@ -1,15 +1,72 @@
 {% if passed %}
 <div class="result pass">
-  <h3>✅ All hidden tests passed!</h3>
+  <h3>✅ All {{ grade.total if grade and grade.total else "hidden" }} tests passed!</h3>
+  {% if grade and grade.tests %}
+  <div class="chip-row">
+    {% for t in grade.tests %}<span class="test-chip pass">✓ {{ t.label }}</span>{% endfor %}
+  </div>
+  {% endif %}
   {% if elapsed %}<p class="muted">Solved in {{ "%.0f"|format(elapsed) }}s.</p>{% endif %}
   {% if show_gamification and best %}
   <p class="muted">Best: {{ best.attempts_to_first_pass }} attempt{{ "s" if best.attempts_to_first_pass != 1 }} to first clear{% if best.best_time_seconds %}, fastest {{ "%.0f"|format(best.best_time_seconds) }}s{% endif %}.</p>
   {% endif %}
   <p><a href="/quest/{{ challenge.quest.slug }}">← Back to quest</a> · <a href="/">World Map</a></p>
 </div>
+
+{% elif grade and grade.syntax_error %}
+<div class="result fail">
+  {% set err = grade.syntax_error %}
+  <h3>🧩 Python couldn't read your code</h3>
+  <p><strong>SyntaxError:</strong> {{ err.message }}{% if err.line_no %} <span class="muted">— line {{ err.line_no }}</span>{% endif %}</p>
+  {% if err.text %}
+  <pre class="code-line">{{ err.line_no }} | {{ err.text }}{% if err.offset %}
+{{ " " * ((err.line_no|string|length) + 3 + err.offset - 1) }}^ right about here{% endif %}</pre>
+  {% endif %}
+  <p class="muted">Fix the syntax and submit again — the tests never even got to run.</p>
+</div>
+
+{% elif grade and grade.tests %}
+<div class="result fail">
+  <div class="test-summary">
+    <h3>❌ {{ grade.passed_count }} / {{ grade.total }} tests passed</h3>
+    <div class="xp-bar wide"><div class="xp-fill" style="width: {{ (100 * grade.passed_count / grade.total)|round|int }}%"></div></div>
+  </div>
+  {% if grade.passed_count %}
+  <div class="chip-row">
+    {% for t in grade.tests if t.outcome == "passed" %}<span class="test-chip pass">✓ {{ t.label }}</span>{% endfor %}
+  </div>
+  {% endif %}
+  {% for t in grade.tests if t.outcome != "passed" %}
+  <div class="test-card">
+    <div class="test-card-head">✗ {{ t.label }}</div>
+    {% if t.error_type and t.error_type != "AssertionError" %}
+    <div class="crash">
+      <p>💥 Your code crashed with <strong>{{ t.error_type }}</strong>: {{ t.error_message }}</p>
+      {% if t.user_line %}
+      <pre class="code-line">line {{ t.user_line_no }} of your code  ▶  {{ t.user_line }}</pre>
+      {% endif %}
+    </div>
+    {% elif t.call %}
+    <dl class="kv">
+      <div><dt>Called</dt><dd><code>{{ t.call }}</code></dd></div>
+      <div><dt>Expected</dt><dd><code class="val-expected">{{ t.expected }}</code></dd></div>
+      <div><dt>Got</dt><dd><code class="val-got">{{ t.got }}</code></dd></div>
+    </dl>
+    {% elif t.got is not none %}
+    <dl class="kv">
+      <div><dt>Expected</dt><dd><code class="val-expected">{{ t.expected }}</code></dd></div>
+      <div><dt>Got</dt><dd><code class="val-got">{{ t.got }}</code></dd></div>
+    </dl>
+    {% elif t.detail %}
+    <pre class="code-line">{{ t.detail }}</pre>
+    {% endif %}
+  </div>
+  {% endfor %}
+</div>
+
 {% else %}
 <div class="result fail">
-  <h3>❌ Not yet — the hidden tests disagree</h3>
+  <h3>{{ "⏱ Time's up" if grade and grade.timed_out else "❌ Not yet — the hidden tests disagree" }}</h3>
   {% if failing_tests %}
   <p>Failing: {% for t in failing_tests %}<code>{{ t }}</code>{{ ", " if not loop.last }}{% endfor %}</p>
   {% endif %}
