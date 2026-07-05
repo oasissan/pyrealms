@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
 <h1>The World Map</h1>
-<p class="muted">Five realms stand between you and interview mastery. Clear each realm's Boss Battle to open the next gate.</p>
+<p class="muted">Realms of idiomatic, well-tested Python. Clear each core realm's Boss Battle to open the next gate — and take on the optional Proving Grounds for interview-style algorithm practice.</p>
 
 {% for ts in map_state %}
 <section class="tier {{ 'locked' if not ts.unlocked }}">
@@ -9,6 +9,7 @@
     <h2>
       {{ "🔓" if ts.unlocked else "🔒" }} Realm {{ ts.tier.order }} — {{ ts.tier.title }}
       <span class="subtitle">{{ ts.tier.subtitle }}</span>
+      {% if ts.tier.optional %}<span class="tag optional-tag">✨ Optional</span>{% endif %}
     </h2>
     {% if show_gamification %}
     <div class="tier-progress" title="{{ ts.done }}/{{ ts.total }} missions">
@@ -20,7 +21,9 @@
 
   {% if not ts.unlocked %}
     <p class="muted">
-      {% if ts.locked_by_level %}
+      {% if ts.tier.optional %}
+        Optional realm — reach level {{ ts.tier.min_level }} to enter whenever you like. It never blocks the main path.
+      {% elif ts.locked_by_level %}
         Reach level {{ ts.tier.min_level }} to enter this realm.
       {% else %}
         Defeat the previous realm's Boss Battle{% if ts.tier.min_level > 1 %} and reach level {{ ts.tier.min_level }}{% endif %} to enter.
@@ -49,11 +52,11 @@
 {% endfor %}
 
 <section class="tier locked">
-  <h2>🔒 Realm 4 — Systems &amp; Performance <span class="subtitle">The Expert Realm</span></h2>
+  <h2>🔒 Realm 5 — Systems &amp; Performance <span class="subtitle">The Expert Realm</span></h2>
   <p class="muted">GIL, asyncio, memory &amp; GC — the interview-crusher tier. Coming in Phase 2.</p>
 </section>
 <section class="tier locked">
-  <h2>🔒 Realm 5 — Hero's Trial <span class="subtitle">The Endgame</span></h2>
+  <h2>🔒 Realm 6 — Hero's Trial <span class="subtitle">The Endgame</span></h2>
   <p class="muted">Boss builds, the Mock Interview Arena, and the capstone. Coming in Phase 2.</p>
 </section>
 

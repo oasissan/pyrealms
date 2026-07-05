@@ -26,6 +26,13 @@
 
 <section class="prompt">{{ prompt_html | safe }}</section>
 
+{% if example_tests %}
+<section class="examples">
+  <h3 class="examples-head">📋 Examples <span class="muted">— a few of the checks you can see; the graded suite is larger and hidden</span></h3>
+  <pre class="example-tests"><code>{{ example_tests }}</code></pre>
+</section>
+{% endif %}
+
 <form hx-post="/challenge/{{ challenge.slug }}/submit" hx-target="#result" hx-swap="innerHTML"
       hx-indicator="#grading-spinner">
   <input type="hidden" name="started_at" value="{{ started_at }}">
@@ -42,6 +49,17 @@
 </form>
 
 <div id="result"></div>
+
+<div id="solution-area">
+  {% if solution_html %}
+    {% include "partials/solution.html" %}
+  {% elif not passed %}
+    <form hx-post="/challenge/{{ challenge.slug }}/reveal" hx-target="#solution-area" hx-swap="innerHTML"
+          hx-confirm="Reveal the canonical solution? The challenge stays unsolved — you can still solve it yourself afterward for the XP.">
+      <button type="submit" class="give-up-btn">🏳️ Give up &amp; show the solution</button>
+    </form>
+  {% endif %}
+</div>
 
 <script type="module">
   // Upgrade the plain textarea to CodeMirror 6 (syntax highlighting, line

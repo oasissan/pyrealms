@@ -1,16 +1,18 @@
 # 🐍 PyRealms
 
 **Python Zero-to-Hero** — a gamified path from your first script to
-interview-ready, built as a real app you run yourself.
+idiomatic, well-tested Python, with an optional realm of interview-style
+algorithm challenges. Built as a real app you run yourself.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![CI](https://github.com/oasissan/pyrealms/actions/workflows/deploy.yml/badge.svg)](https://github.com/oasissan/pyrealms/actions/workflows/deploy.yml)
 
-Five tiered "Realms" of quests and missions, auto-graded by hidden pytest
-suites, with XP, levels, streaks, freeze tokens, badges, and timed Boss
-Battles. Built with FastAPI + Jinja2 + HTMX + SQLite — no build step, no
-JS framework, no account system. The codebase itself is meant to double as
-advanced-Python practice for anyone reading it.
+Tiered "Realms" of quests and missions, auto-graded by hidden pytest
+suites — with visible example tests to learn from, a canonical solution
+revealed once you pass, plus XP, levels, streaks, freeze tokens, badges,
+and timed Boss Battles. Built with FastAPI + Jinja2 + HTMX + SQLite — no
+build step, no JS framework, no account system. The codebase itself is
+meant to double as advanced-Python practice for anyone reading it.
 
 Design spec: [`docs/superpowers/specs/2026-07-05-python-zero-to-hero-design.md`](docs/superpowers/specs/2026-07-05-python-zero-to-hero-design.md)
 
@@ -31,9 +33,16 @@ reset your progress and reseed from scratch.
 
 ## Features
 
-- **21 quests, 39 challenges** across 3 realms (Foundations, Core
-  Craftsmanship, Pythonic Mastery), each a short lesson + a coding
-  challenge auto-graded against a hidden pytest suite
+- **25 quests, 47 challenges** across 3 core realms (Foundations, Core
+  Craftsmanship, Pythonic Mastery) — each a short lesson + a coding
+  challenge auto-graded against a hidden pytest suite — plus an **optional
+  Proving Grounds realm** (6 quests, 11 challenges) of interview-style
+  algorithms: recursion & Big-O, two pointers, sliding windows, hash-map
+  patterns, and sort/search
+- **Visible example tests** on every lesson challenge so you can see the
+  expected input/output while you learn; Boss challenges stay fully hidden
+- **A canonical solution** — idiomatic code plus a short "why" — revealed
+  the moment you pass, so you can compare it against your own answer
 - **XP & levels** — an append-only ledger (never a mutable counter), with
   levels gating access to later realms
 - **Streaks with freeze tokens** — evaluated lazily on local dates, no
@@ -51,9 +60,12 @@ reset your progress and reseed from scratch.
 
 ## How it works
 
-- **Curriculum** — `app/content/tier{1,2,3}.py` are the seed data: each
-  mission is a dict with a lesson, a prompt, starter code, and a hidden
-  pytest suite. `app/seed.py` loads them into SQLite on first boot.
+- **Curriculum** — `app/content/tier{1,2,3,4}.py` are the seed data: each
+  mission is a dict with a lesson, a prompt, starter code, a hidden pytest
+  suite, optional visible `example_tests`, and a `solution_md` (canonical
+  answer + why). `app/seed.py` loads them into SQLite on first boot.
+  `tests/test_content.py` runs every mission's `solution_md` against its
+  own hidden suite, so a solution can never silently rot.
 - **Grading** — `app/grading.py` writes your submission to a temp dir and
   runs the hidden suite via `subprocess`, with a 5s timeout and a Unix
   memory cap. ⚠️ **Not a security sandbox** — fine for running on your own
@@ -79,9 +91,11 @@ caveat above.
 
 ## Roadmap
 
-MVP (done): Tiers 1–3, full gamification loop, local subprocess grading.
+Done: Realms 1–3, the optional Proving Grounds (DSA/interview) realm,
+visible example tests, post-pass solution reveals, full gamification loop,
+local subprocess grading.
 
-Stretch (not yet built): Tiers 4–5 (systems/performance, capstone), a Mock
+Stretch (not yet built): Realms 5–6 (systems/performance, capstone), a Mock
 Interview Arena, an alternate GitHub-Actions-based grading backend,
 cosmetic unlocks.
 

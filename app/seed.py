@@ -20,6 +20,7 @@ def seed(db: Session) -> None:
             subtitle=tier_data["subtitle"],
             order=tier_data["order"],
             min_level=tier_data["min_level"],
+            optional=tier_data.get("optional", False),
         )
         db.add(tier)
         db.flush()
@@ -48,6 +49,8 @@ def seed(db: Session) -> None:
                         prompt_md=mission["prompt_md"],
                         starter_code=mission.get("starter_code", ""),
                         hidden_tests=mission["hidden_tests"],
+                        example_tests=mission.get("example_tests", ""),
+                        solution_md=mission.get("solution_md", ""),
                         xp_reward=mission["xp"],
                         time_limit_seconds=mission.get("time_limit_seconds"),
                     )

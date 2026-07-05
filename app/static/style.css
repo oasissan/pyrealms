@@ -112,6 +112,7 @@ h1, h2, h3 { line-height: 1.25; }
   border-radius: 4px; padding: 0 0.4rem; font-size: 0.75rem;
 }
 .boss-tag { border-color: var(--accent); color: var(--accent); }
+.optional-tag { border-color: var(--accent-2); color: var(--accent-2); margin-left: 0.5rem; }
 
 /* Mission page */
 .lesson, .prompt {
@@ -155,6 +156,41 @@ pre code { background: none; padding: 0; }
 .primary-btn:hover { filter: brightness(1.1); }
 .htmx-indicator { opacity: 0; transition: opacity 0.2s; }
 .htmx-request .htmx-indicator, .htmx-request.htmx-indicator { opacity: 1; }
+
+/* Example tests (visible, illustrative — standard missions only) */
+.examples { margin: 1rem 0; }
+.examples-head { font-size: 0.95rem; margin: 0 0 0.4rem; }
+.examples-head .muted { font-weight: normal; font-size: 0.8rem; }
+.example-tests {
+  background: #0b0e1a; border: 1px solid var(--border);
+  border-left: 4px solid var(--accent-2); border-radius: 8px;
+  padding: 0.75rem; overflow-x: auto; font-size: 0.85rem; margin: 0;
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+}
+
+/* Give up — deliberately understated so it isn't the tempting path */
+#solution-area { margin: 1rem 0; }
+.give-up-btn {
+  background: transparent; color: var(--muted);
+  border: 1px solid var(--border); border-radius: 8px;
+  padding: 0.45rem 0.9rem; font-size: 0.85rem; cursor: pointer;
+}
+.give-up-btn:hover { color: var(--text); border-color: var(--muted); }
+
+/* Canonical solution reveal (post-pass or given-up) */
+.solution-reveal {
+  background: var(--panel); border: 1px solid var(--accent);
+  border-radius: 10px; padding: 0.5rem 1.25rem; margin: 1rem 0;
+}
+.solution-reveal summary {
+  cursor: pointer; font-weight: 600; color: var(--accent);
+  padding: 0.35rem 0;
+}
+.solution-body { border-top: 1px solid var(--border); margin-top: 0.5rem; }
+.solution-body pre {
+  background: #0b0e1a; border: 1px solid var(--border); border-radius: 8px;
+  padding: 0.75rem; overflow-x: auto; font-size: 0.85rem;
+}
 
 .boss-timer {
   background: #2a2340; border: 1px solid var(--accent);

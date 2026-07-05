@@ -41,6 +41,16 @@ Write a **generator function** `countdown(n)` that yields
 `n, n-1, ..., 1`. It must yield lazily — no building a list.
 """,
                     "starter_code": "def countdown(n):\n    ...\n",
+                    "example_tests": """\
+import types
+from solution import countdown
+
+def test_values():
+    assert list(countdown(3)) == [3, 2, 1]
+
+def test_is_generator():
+    assert isinstance(countdown(1), types.GeneratorType)
+""",
                     "hidden_tests": """\
 import types
 from solution import countdown
@@ -57,6 +67,19 @@ def test_lazy():
 
 def test_zero():
     assert list(countdown(0)) == []
+""",
+                    "solution_md": """\
+```python
+def countdown(n):
+    while n > 0:
+        yield n
+        n -= 1
+```
+
+**Why:** the presence of `yield` makes this a generator function — calling it
+runs *none* of the body until you iterate. Each `next()` resumes right after the
+last `yield`, so it produces one value at a time and never materialises the full
+sequence (that's what `test_lazy` proves with a trillion-length countdown).
 """,
                 },
                 {
@@ -86,6 +109,20 @@ def test_independent_iterators():
 
 def test_goes_far():
     assert next(islice(fibonacci(), 30, 31)) == 832040
+""",
+                    "solution_md": """\
+```python
+def fibonacci():
+    a, b = 0, 1
+    while True:
+        yield a
+        a, b = b, a + b
+```
+
+**Why:** an infinite `while True` loop is safe *because* the generator is lazy —
+it only computes as far as the caller pulls. The tuple assignment
+`a, b = b, a + b` advances both numbers in one atomic step, and each call to
+`fibonacci()` gets its own independent `a`/`b`.
 """,
                 },
             ],
@@ -130,6 +167,19 @@ decorated function returns. It must forward any arguments and preserve the
 function's `__name__` via `functools.wraps`.
 """,
                     "starter_code": "import functools\n\n\ndef shout(func):\n    ...\n",
+                    "example_tests": """\
+from solution import shout
+
+@shout
+def greet(name):
+    return f"hello {name}"
+
+def test_uppercases():
+    assert greet("ada") == "HELLO ADA"
+
+def test_wraps_preserves_name():
+    assert greet.__name__ == "greet"
+""",
                     "hidden_tests": """\
 from solution import shout
 
@@ -148,6 +198,23 @@ def test_forwards_kwargs():
 
 def test_wraps_preserves_name():
     assert greet.__name__ == "greet"
+""",
+                    "solution_md": """\
+```python
+import functools
+
+
+def shout(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        return func(*args, **kwargs).upper()
+    return wrapper
+```
+
+**Why:** `wrapper` forwards every argument with `*args, **kwargs`, calls the
+original, and uppercases its result. `@functools.wraps(func)` copies the
+original's `__name__`/docstring onto `wrapper`, so the decorated function still
+introspects as `greet` rather than `wrapper`.
 """,
                 },
                 {
@@ -191,6 +258,28 @@ def test_name_preserved():
         return 1
     assert thing.__name__ == "thing"
 """,
+                    "solution_md": """\
+```python
+import functools
+
+
+def memoize(func):
+    cache = {}
+
+    @functools.wraps(func)
+    def wrapper(*args):
+        if args not in cache:
+            cache[args] = func(*args)
+        return cache[args]
+
+    return wrapper
+```
+
+**Why:** the `cache` dict lives in the closure, keyed by the `args` tuple —
+which is hashable, so it works as a dict key directly. A cache miss computes and
+stores; a hit returns instantly (`test_caches` verifies the function body ran
+only once). This is `functools.lru_cache` in miniature.
+""",
                 },
             ],
         },
@@ -231,6 +320,17 @@ given type (including subclasses) and lets everything else propagate.
 Don't import contextlib.
 """,
                     "starter_code": "class Suppress:\n    def __init__(self, exc_type):\n        ...\n",
+                    "example_tests": """\
+from solution import Suppress
+
+def test_swallows():
+    with Suppress(ValueError):
+        raise ValueError("gone")
+
+def test_subclass_swallowed():
+    with Suppress(ArithmeticError):
+        raise ZeroDivisionError
+""",
                     "hidden_tests": """\
 import pytest
 from solution import Suppress
@@ -251,6 +351,25 @@ def test_others_propagate():
 def test_no_exception_ok():
     with Suppress(ValueError):
         pass
+""",
+                    "solution_md": """\
+```python
+class Suppress:
+    def __init__(self, exc_type):
+        self.exc_type = exc_type
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc, tb):
+        return exc_type is not None and issubclass(exc_type, self.exc_type)
+```
+
+**Why:** the magic is `__exit__`'s return value — returning **truthy** tells
+Python to swallow the exception. `issubclass(exc_type, self.exc_type)` matches
+the target type *and its subclasses* (so `ZeroDivisionError` is caught by
+`Suppress(ArithmeticError)`), while any other exception yields `False` and
+propagates.
 """,
                 },
                 {
@@ -297,6 +416,27 @@ def test_rollback_removes_new_keys():
             raise ValueError
     assert d == {}
 """,
+                    "solution_md": """\
+```python
+from contextlib import contextmanager
+
+
+@contextmanager
+def transaction(data):
+    backup = dict(data)
+    try:
+        yield data
+    except Exception:
+        data.clear()
+        data.update(backup)
+        raise
+```
+
+**Why:** snapshot the dict *before* yielding control. On success the changes
+simply persist. On any exception, `clear()` + `update(backup)` restores the
+exact prior contents — removing keys added inside the block too — and the bare
+`raise` re-raises so the caller still sees the error.
+""",
                 },
             ],
         },
@@ -338,6 +478,16 @@ two concrete subclasses: `Circle(radius)` and `Square(side)` (use
                         "import math\nfrom abc import ABC, abstractmethod\n\n\n"
                         "class Shape(ABC):\n    ...\n"
                     ),
+                    "example_tests": """\
+import math
+from solution import Circle, Square
+
+def test_circle():
+    assert abs(Circle(2).area() - 4 * math.pi) < 1e-9
+
+def test_square():
+    assert Square(3).area() == 9
+""",
                     "hidden_tests": """\
 import math
 import pytest
@@ -355,6 +505,39 @@ def test_square():
 
 def test_subclasses():
     assert issubclass(Circle, Shape) and issubclass(Square, Shape)
+""",
+                    "solution_md": """\
+```python
+import math
+from abc import ABC, abstractmethod
+
+
+class Shape(ABC):
+    @abstractmethod
+    def area(self):
+        ...
+
+
+class Circle(Shape):
+    def __init__(self, radius):
+        self.radius = radius
+
+    def area(self):
+        return math.pi * self.radius ** 2
+
+
+class Square(Shape):
+    def __init__(self, side):
+        self.side = side
+
+    def area(self):
+        return self.side ** 2
+```
+
+**Why:** inheriting from `ABC` plus an `@abstractmethod` makes `Shape` a
+contract — Python refuses to instantiate it directly (`test_abstract`), forcing
+every subclass to supply a real `area`. That's how you express "this is an
+interface, not a usable object" in Python.
 """,
                 },
                 {
@@ -395,6 +578,27 @@ def test_round_trip():
 def test_mixin_in_mro():
     assert JsonMixin in Point.__mro__
 """,
+                    "solution_md": """\
+```python
+import json
+
+
+class JsonMixin:
+    def to_json(self):
+        return json.dumps(self.__dict__, sort_keys=True)
+
+
+class Point(JsonMixin):
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+```
+
+**Why:** a mixin adds one capability without caring about the concrete class —
+`JsonMixin.to_json` just serialises whatever is in `self.__dict__`, so *any*
+class that mixes it in becomes JSON-dumpable. `sort_keys=True` makes the output
+deterministic, and `JsonMixin` sits in `Point.__mro__` so the method resolves.
+""",
                 },
             ],
         },
@@ -431,6 +635,15 @@ product of the **odd** numbers in `nums`. An input with no odd numbers
 returns `1`.
 """,
                     "starter_code": "from functools import reduce\n\n\ndef product_of_odds(nums):\n    ...\n",
+                    "example_tests": """\
+from solution import product_of_odds
+
+def test_mixed():
+    assert product_of_odds([1, 2, 3, 4, 5]) == 15
+
+def test_no_odds():
+    assert product_of_odds([2, 4]) == 1
+""",
                     "hidden_tests": """\
 from solution import product_of_odds
 
@@ -445,6 +658,20 @@ def test_empty():
 
 def test_single():
     assert product_of_odds([7]) == 7
+""",
+                    "solution_md": """\
+```python
+from functools import reduce
+
+
+def product_of_odds(nums):
+    odds = [n for n in nums if n % 2 != 0]
+    return reduce(lambda a, b: a * b, odds, 1)
+```
+
+**Why:** filter to the odds first, then `reduce` folds them into a single
+product. The explicit `init=1` is what makes the empty case return `1` instead
+of raising — it's both the identity for multiplication and the safe seed.
 """,
                 },
                 {
@@ -477,6 +704,20 @@ def test_empty():
 def test_preserves_order():
     out = group_by(["zz", "aa"], len)
     assert out[2] == ["zz", "aa"]
+""",
+                    "solution_md": """\
+```python
+def group_by(items, keyfunc):
+    groups = {}
+    for item in items:
+        groups.setdefault(keyfunc(item), []).append(item)
+    return groups
+```
+
+**Why:** `setdefault(key, [])` returns the existing list or installs a fresh one
+in a single step, so each item appends to its group's list. Because you iterate
+`items` in order and only ever append, first-seen order is preserved within each
+group.
 """,
                 },
             ],
@@ -518,6 +759,19 @@ message; otherwise return the dict unchanged.
                         "class InvalidConfigError(Exception):\n    pass\n\n\n"
                         "def load_config(data):\n    ...\n"
                     ),
+                    "example_tests": """\
+import pytest
+from solution import InvalidConfigError, load_config
+
+def test_valid():
+    cfg = {"host": "localhost", "port": 8000}
+    assert load_config(cfg) == cfg
+
+def test_missing_host():
+    with pytest.raises(InvalidConfigError) as exc:
+        load_config({"port": 8000})
+    assert "host" in str(exc.value)
+""",
                     "hidden_tests": """\
 import pytest
 from solution import InvalidConfigError, load_config
@@ -538,6 +792,24 @@ def test_missing_port():
 
 def test_is_exception_subclass():
     assert issubclass(InvalidConfigError, Exception)
+""",
+                    "solution_md": """\
+```python
+class InvalidConfigError(Exception):
+    pass
+
+
+def load_config(data):
+    for key in ("host", "port"):
+        if key not in data:
+            raise InvalidConfigError(f"missing key: {key}")
+    return data
+```
+
+**Why:** an empty `Exception` subclass is a *type* callers can catch precisely
+(`except InvalidConfigError`) instead of a vague `ValueError`. Putting the
+missing key in the message aids debugging without changing that the type itself
+is the primary signal.
 """,
                 },
                 {
@@ -572,6 +844,24 @@ def test_chained_cause():
     with pytest.raises(LookupFailedError) as exc:
         fetch_value({}, "ghost")
     assert isinstance(exc.value.__cause__, KeyError)
+""",
+                    "solution_md": """\
+```python
+class LookupFailedError(Exception):
+    pass
+
+
+def fetch_value(data, key):
+    try:
+        return data[key]
+    except KeyError as exc:
+        raise LookupFailedError(key) from exc
+```
+
+**Why:** `raise ... from exc` sets `__cause__` to the original `KeyError`, so the
+traceback reads "LookupFailedError … *directly caused by* KeyError." You get a
+clean domain-level error at the surface without discarding the low-level reason
+underneath.
 """,
                 },
             ],
@@ -648,6 +938,44 @@ def test_chunked_is_lazy():
 
 def test_chunked_exact():
     assert list(chunked("abcd", 2)) == [["a", "b"], ["c", "d"]]
+""",
+                    "solution_md": """\
+```python
+import functools
+
+
+def retry(times):
+    def decorator(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            last_exc = None
+            for _ in range(times):
+                try:
+                    return func(*args, **kwargs)
+                except Exception as exc:
+                    last_exc = exc
+            raise last_exc
+        return wrapper
+    return decorator
+
+
+def chunked(iterable, size):
+    chunk = []
+    for item in iterable:
+        chunk.append(item)
+        if len(chunk) == size:
+            yield chunk
+            chunk = []
+    if chunk:
+        yield chunk
+```
+
+**Why:** `retry` is a *parameterised* decorator — three nested layers: it takes
+`times`, returns a decorator, which returns the wrapper. The wrapper returns on
+first success or re-raises the last exception once attempts run out. `chunked`
+buffers items and `yield`s a full list every `size` elements, flushing any
+partial final chunk — and because it uses `yield`, it stays lazy over even an
+infinite iterable.
 """,
                 },
             ],

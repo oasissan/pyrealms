@@ -11,7 +11,7 @@ from ..grading import run_hidden_tests
 from ..models import Challenge, Settings, Submission
 from ..services import achievements, progress, streak, xp
 from ..templating import templates
-from .pages import hud_context
+from .pages import hud_context, render_md
 
 router = APIRouter()
 
@@ -93,7 +93,36 @@ def submit_challenge(
             "new_badges": new_badges,
             "best": progress.personal_best(db, challenge.id),
             "elapsed": elapsed,
+            # Reveal the canonical solution as part of the reward moment.
+            "solution_html": render_md(challenge.solution_md)
+            if passed and challenge.solution_md
+            else "",
             **hud_context(db),
+        },
+    )
+
+
+@router.post("/challenge/{slug}/reveal")
+def reveal_solution(slug: str, request: Request, db: Session = Depends(get_db)):
+    """Give up: record the reveal and return the canonical solution partial.
+    Does not mark the challenge passed — no XP is awarded here."""
+    challenge = db.execute(
+        select(Challenge).where(Challenge.slug == slug)
+    ).scalar_one_or_none()
+    if challenge is None:
+        raise HTTPException(404, "Unknown challenge")
+
+    progress.reveal_solution(db, challenge.id)
+    db.commit()
+
+    return templates.TemplateResponse(
+        request,
+        "partials/solution.html",
+        {
+            "solution_html": render_md(challenge.solution_md)
+            if challenge.solution_md
+            else "",
+            "gave_up": True,
         },
     )
 

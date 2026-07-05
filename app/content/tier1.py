@@ -40,6 +40,15 @@ Write `celsius_to_fahrenheit(celsius)` that converts a temperature using
 `F = C × 9/5 + 32` and returns the result as a **float**.
 """,
                     "starter_code": "def celsius_to_fahrenheit(celsius):\n    ...\n",
+                    "example_tests": """\
+from solution import celsius_to_fahrenheit
+
+def test_freezing():
+    assert celsius_to_fahrenheit(0) == 32.0
+
+def test_boiling():
+    assert celsius_to_fahrenheit(100) == 212.0
+""",
                     "hidden_tests": """\
 from solution import celsius_to_fahrenheit
 
@@ -54,6 +63,16 @@ def test_crossover_point():
 
 def test_returns_float():
     assert isinstance(celsius_to_fahrenheit(0), float)
+""",
+                    "solution_md": """\
+```python
+def celsius_to_fahrenheit(celsius):
+    return celsius * 9 / 5 + 32
+```
+
+**Why:** straight from the formula. Because `/` always yields a `float` in
+Python 3, the result is a float even when the maths comes out even — which is
+exactly what `test_returns_float` checks.
 """,
                 },
                 {
@@ -86,6 +105,17 @@ def test_bool_is_not_int():
 
 def test_none():
     assert describe(None) == "NoneType"
+""",
+                    "solution_md": """\
+```python
+def describe(value):
+    return type(value).__name__
+```
+
+**Why:** `type(value)` is the exact class, and `.__name__` is its bare name —
+`"NoneType"` for `None`, and crucially `"bool"` (not `"int"`) for `True`,
+because `type()` returns the *real* class even though `bool` subclasses `int`.
+An `isinstance` ladder would wrongly report `True` as an `int`.
 """,
                 },
             ],
@@ -120,6 +150,15 @@ Write `fizzbuzz(n)` that returns a **list** of strings for the numbers
 `"Buzz"` for multiples of 5, otherwise the number as a string.
 """,
                     "starter_code": "def fizzbuzz(n):\n    ...\n",
+                    "example_tests": """\
+from solution import fizzbuzz
+
+def test_first_five():
+    assert fizzbuzz(5) == ["1", "2", "Fizz", "4", "Buzz"]
+
+def test_fifteen():
+    assert fizzbuzz(15)[-1] == "FizzBuzz"
+""",
                     "hidden_tests": """\
 from solution import fizzbuzz
 
@@ -134,6 +173,26 @@ def test_length():
 
 def test_all_strings():
     assert all(isinstance(x, str) for x in fizzbuzz(20))
+""",
+                    "solution_md": """\
+```python
+def fizzbuzz(n):
+    out = []
+    for i in range(1, n + 1):
+        if i % 15 == 0:
+            out.append("FizzBuzz")
+        elif i % 3 == 0:
+            out.append("Fizz")
+        elif i % 5 == 0:
+            out.append("Buzz")
+        else:
+            out.append(str(i))
+    return out
+```
+
+**Why:** the `% 15` case comes *first* — it's the most specific, and checking
+it before `% 3` / `% 5` is what stops a multiple of fifteen from matching
+`"Fizz"` early. `range(1, n + 1)` covers `1..n` inclusive.
 """,
                 },
                 {
@@ -165,6 +224,26 @@ def test_extremes():
 def test_invalid():
     assert grade_letter(101) == "invalid"
     assert grade_letter(-1) == "invalid"
+""",
+                    "solution_md": """\
+```python
+def grade_letter(score):
+    if score < 0 or score > 100:
+        return "invalid"
+    if score >= 90:
+        return "A"
+    if score >= 80:
+        return "B"
+    if score >= 70:
+        return "C"
+    if score >= 60:
+        return "D"
+    return "F"
+```
+
+**Why:** validate the out-of-range case first, then test the thresholds from
+highest down. Descending order means each `>=` only has to name the floor of
+its band — the higher bands have already been ruled out.
 """,
                 },
             ],
@@ -200,6 +279,15 @@ Write `make_greeting(name, greeting="Hello")` that returns
 `"Hello, Ada!"`.
 """,
                     "starter_code": "def make_greeting(name, greeting=\"Hello\"):\n    ...\n",
+                    "example_tests": """\
+from solution import make_greeting
+
+def test_default():
+    assert make_greeting("Ada") == "Hello, Ada!"
+
+def test_custom():
+    assert make_greeting("Grace", "Salute") == "Salute, Grace!"
+""",
                     "hidden_tests": """\
 from solution import make_greeting
 
@@ -211,6 +299,16 @@ def test_custom():
 
 def test_keyword():
     assert make_greeting(name="Guido", greeting="Yo") == "Yo, Guido!"
+""",
+                    "solution_md": """\
+```python
+def make_greeting(name, greeting="Hello"):
+    return f"{greeting}, {name}!"
+```
+
+**Why:** the default `greeting="Hello"` fills in when the caller omits it, and
+because callers can pass by keyword (`greeting="Yo"`), the parameter names are
+part of your function's public interface — choose them deliberately.
 """,
                 },
                 {
@@ -237,6 +335,16 @@ def test_string():
 
 def test_double():
     assert apply_twice(lambda x: x * 2, 1) == 4
+""",
+                    "solution_md": """\
+```python
+def apply_twice(func, value):
+    return func(func(value))
+```
+
+**Why:** `func` is just a value you can call. Passing functions as arguments
+is the foundation of `map`, `sorted(key=...)`, decorators, and callbacks —
+everything "higher-order" starts here.
 """,
                 },
             ],
@@ -271,6 +379,15 @@ lowercases, and replaces each space **between words** with an underscore.
 `clean_username("  Ada Lovelace ")` returns `"ada_lovelace"`.
 """,
                     "starter_code": "def clean_username(raw):\n    ...\n",
+                    "example_tests": """\
+from solution import clean_username
+
+def test_basic():
+    assert clean_username("  Ada Lovelace ") == "ada_lovelace"
+
+def test_multiple_words():
+    assert clean_username("Grace Brewster Hopper") == "grace_brewster_hopper"
+""",
                     "hidden_tests": """\
 from solution import clean_username
 
@@ -282,6 +399,16 @@ def test_already_clean():
 
 def test_multiple_words():
     assert clean_username("Grace Brewster Hopper") == "grace_brewster_hopper"
+""",
+                    "solution_md": """\
+```python
+def clean_username(raw):
+    return raw.strip().lower().replace(" ", "_")
+```
+
+**Why:** order matters — `strip()` first removes the *surrounding* spaces so
+they never become underscores, then the inner `replace` only touches the
+spaces *between* words. Chaining reads as a clean left-to-right pipeline.
 """,
                 },
                 {
@@ -311,6 +438,17 @@ def test_case_insensitive():
 
 def test_empty():
     assert is_palindrome("") is True
+""",
+                    "solution_md": """\
+```python
+def is_palindrome(text):
+    cleaned = [c.lower() for c in text if c.isalnum()]
+    return cleaned == cleaned[::-1]
+```
+
+**Why:** first reduce the text to just its lowercased alphanumeric characters,
+then compare that against its own reverse (`[::-1]`). Filtering *before*
+comparing is what lets punctuation and case fall away cleanly.
 """,
                 },
             ],
@@ -349,6 +487,17 @@ Write `count_words(text)` that lowercases the text, splits on whitespace,
 and returns a dict mapping each word to how many times it appears.
 """,
                     "starter_code": "def count_words(text):\n    ...\n",
+                    "example_tests": """\
+from solution import count_words
+
+def test_basic():
+    assert count_words("the cat and the hat") == {
+        "the": 2, "cat": 1, "and": 1, "hat": 1
+    }
+
+def test_case_insensitive():
+    assert count_words("Go go GO") == {"go": 3}
+""",
                     "hidden_tests": """\
 from solution import count_words
 
@@ -362,6 +511,19 @@ def test_case_insensitive():
 
 def test_empty():
     assert count_words("") == {}
+""",
+                    "solution_md": """\
+```python
+def count_words(text):
+    counts = {}
+    for word in text.lower().split():
+        counts[word] = counts.get(word, 0) + 1
+    return counts
+```
+
+**Why:** `.get(word, 0)` supplies a starting count so the first sighting of a
+word doesn't `KeyError`. This is *the* tallying idiom — and later you'll meet
+`collections.Counter`, which does exactly this in one line.
 """,
                 },
                 {
@@ -391,6 +553,128 @@ def test_empty():
 
 def test_returns_list():
     assert isinstance(unique_in_order((1, 1, 2)), list)
+""",
+                    "solution_md": """\
+```python
+def unique_in_order(items):
+    return list(dict.fromkeys(items))
+```
+
+**Why:** `dict.fromkeys` builds a dict whose keys are the items — duplicates
+collapse automatically, and since dicts keep insertion order, the keys come
+back first-seen. Wrapping in `list()` drops the (unused) values. A `set` would
+dedupe too, but scramble the order.
+""",
+                },
+            ],
+        },
+        {
+            "slug": "iteration-tools",
+            "title": "enumerate & zip",
+            "description": "Loop with an index, and walk two sequences together.",
+            "badge": {"id": "iteration-initiate", "name": "Iteration Initiate", "icon": "🔁"},
+            "missions": [
+                {
+                    "slug": "iteration-enumerate",
+                    "title": "Counting While You Loop",
+                    "kind": "standard",
+                    "xp": 50,
+                    "lesson_md": """\
+Reaching for `range(len(xs))` to get an index is a code smell. **`enumerate`**
+hands you the index *and* the item, and its `start` argument sets where the
+count begins:
+
+```python
+for i, item in enumerate(items, start=1):
+    print(f"{i}: {item}")     # 1-based numbering
+```
+
+Its sibling **`zip`** walks several sequences in lockstep, stopping at the
+shortest:
+
+```python
+for name, score in zip(names, scores):
+    ...
+dict(zip(keys, values))       # build a dict from two lists
+```
+
+Between them, these two retire almost every manual index you'd ever write.
+""",
+                    "prompt_md": """\
+Write `numbered(items)` that returns a list of strings numbering each item
+from **1**, formatted as `"1. apple"`. `numbered(["a", "b"])` returns
+`["1. a", "2. b"]`. Use `enumerate`.
+""",
+                    "starter_code": "def numbered(items):\n    ...\n",
+                    "example_tests": """\
+from solution import numbered
+
+def test_basic():
+    assert numbered(["a", "b"]) == ["1. a", "2. b"]
+
+def test_empty():
+    assert numbered([]) == []
+""",
+                    "hidden_tests": """\
+from solution import numbered
+
+def test_basic():
+    assert numbered(["a", "b"]) == ["1. a", "2. b"]
+
+def test_empty():
+    assert numbered([]) == []
+
+def test_starts_at_one():
+    assert numbered(["apple"]) == ["1. apple"]
+
+def test_longer():
+    assert numbered(["x", "y", "z"])[2] == "3. z"
+""",
+                    "solution_md": """\
+```python
+def numbered(items):
+    return [f"{i}. {item}" for i, item in enumerate(items, start=1)]
+```
+
+**Why:** `enumerate(items, start=1)` yields `(1, item)`, `(2, item)`, … so you
+get human-friendly 1-based numbering without ever touching `range(len(...))`
+or a manual counter.
+""",
+                },
+                {
+                    "slug": "iteration-zip-boss",
+                    "title": "Boss: The Transposer",
+                    "kind": "boss",
+                    "xp": 100,
+                    "prompt_md": """\
+**Boss challenge — hidden tests, no hints.**
+
+Write `transpose(rows)` that transposes a matrix given as a list of equal-
+length rows: columns become rows. `transpose([[1, 2, 3], [4, 5, 6]])` returns
+`[(1, 4), (2, 5), (3, 6)]`.
+""",
+                    "starter_code": "def transpose(rows):\n    ...\n",
+                    "hidden_tests": """\
+from solution import transpose
+
+def test_basic():
+    assert transpose([[1, 2, 3], [4, 5, 6]]) == [(1, 4), (2, 5), (3, 6)]
+
+def test_square():
+    assert transpose([[1, 2], [3, 4]]) == [(1, 3), (2, 4)]
+
+def test_single_row():
+    assert transpose([[1, 2, 3]]) == [(1,), (2,), (3,)]
+""",
+                    "solution_md": """\
+```python
+def transpose(rows):
+    return list(zip(*rows))
+```
+
+**Why:** `zip(*rows)` unpacks each row as a separate argument to `zip`, which
+then pulls one element from every row at a time — precisely a column. This
+`zip(*matrix)` idiom is the canonical one-liner transpose.
 """,
                 },
             ],
@@ -430,6 +714,15 @@ Write `safe_divide(a, b)` that returns `a / b`, or `None` if `b` is zero.
 Use `try`/`except`, not an `if` check.
 """,
                     "starter_code": "def safe_divide(a, b):\n    ...\n",
+                    "example_tests": """\
+from solution import safe_divide
+
+def test_normal():
+    assert safe_divide(10, 4) == 2.5
+
+def test_zero():
+    assert safe_divide(1, 0) is None
+""",
                     "hidden_tests": """\
 from solution import safe_divide
 
@@ -441,6 +734,19 @@ def test_zero():
 
 def test_negative():
     assert safe_divide(-9, 3) == -3.0
+""",
+                    "solution_md": """\
+```python
+def safe_divide(a, b):
+    try:
+        return a / b
+    except ZeroDivisionError:
+        return None
+```
+
+**Why:** the "ask forgiveness, not permission" (EAFP) style Python favours —
+attempt the division and catch the *specific* `ZeroDivisionError` rather than
+pre-checking `if b == 0`. Catch the narrowest exception that fits.
 """,
                 },
                 {
@@ -473,6 +779,20 @@ def test_none_input():
 
 def test_list_input():
     assert parse_int_or_default([1, 2], default=5) == 5
+""",
+                    "solution_md": """\
+```python
+def parse_int_or_default(text, default=0):
+    try:
+        return int(text)
+    except (ValueError, TypeError):
+        return default
+```
+
+**Why:** a bad string raises `ValueError` while `None`/a list raise
+`TypeError`, so catching *both* (as a tuple) covers every failure the prompt
+names. It's still narrow and deliberate — not a blanket `except:` that would
+also swallow bugs like `KeyboardInterrupt`.
 """,
                 },
             ],
@@ -526,6 +846,26 @@ def test_low_stock_strict():
 def test_combined():
     inv = summarize_inventory([("a", 1), ("b", 9), ("a", 1)])
     assert low_stock(inv, 3) == ["a"]
+""",
+                    "solution_md": """\
+```python
+def summarize_inventory(pairs):
+    totals = {}
+    for name, qty in pairs:
+        totals[name] = totals.get(name, 0) + qty
+    return totals
+
+
+def low_stock(inventory, threshold):
+    return sorted(
+        name for name, qty in inventory.items() if qty < threshold
+    )
+```
+
+**Why:** `summarize_inventory` is the tally idiom again — accumulate quantities
+into a dict with `.get(name, 0)`. `low_stock` filters `.items()` on the strict
+`<` (so a quantity *equal* to the threshold is safe) and `sorted` gives the
+alphabetical order the tests demand.
 """,
                 },
             ],

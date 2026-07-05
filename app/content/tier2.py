@@ -38,6 +38,15 @@ Write `squares_of_evens(nums)` returning a list of the squares of only the
 `[4, 16]`.
 """,
                     "starter_code": "def squares_of_evens(nums):\n    ...\n",
+                    "example_tests": """\
+from solution import squares_of_evens
+
+def test_mixed():
+    assert squares_of_evens([1, 2, 3, 4]) == [4, 16]
+
+def test_no_evens():
+    assert squares_of_evens([1, 3, 5]) == []
+""",
                     "hidden_tests": """\
 from solution import squares_of_evens
 
@@ -50,6 +59,16 @@ def test_no_evens():
 def test_negative():
     assert squares_of_evens([-2, 0, 7]) == [4, 0]
 """,
+                    "solution_md": """\
+```python
+def squares_of_evens(nums):
+    return [x * x for x in nums if x % 2 == 0]
+```
+
+**Why:** one comprehension carries both the filter (`if x % 2 == 0`) and the
+transform (`x * x`), reading left to right. `0` is even, so it survives — a
+neat reminder that `0 % 2 == 0`.
+""",
                 },
                 {
                     "slug": "comprehensions-boss",
@@ -59,9 +78,9 @@ def test_negative():
                     "prompt_md": """\
 **Boss challenge — hidden tests, no hints.**
 
-Write `flatten(matrix)` that flattens a list of lists one level deep into
-a single list, using a **nested comprehension**.
-`flatten([[1, 2], [3], []])` returns `[1, 2, 3]`.
+Write `flatten(matrix)` that flattens a list of lists one level deep into a
+single list. `flatten([[1, 2], [3], []])` returns `[1, 2, 3]`. A nested
+comprehension — `[x for row in matrix for x in row]` — is the clean way here.
 """,
                     "starter_code": "def flatten(matrix):\n    ...\n",
                     "hidden_tests": """\
@@ -78,6 +97,125 @@ def test_strings():
 
 def test_preserves_order():
     assert flatten([[3, 1], [2]]) == [3, 1, 2]
+""",
+                    "solution_md": """\
+```python
+def flatten(matrix):
+    return [x for row in matrix for x in row]
+```
+
+**Why:** in a nested comprehension the loops read in the *same order* you'd
+write them as nested `for` statements — outer (`for row in matrix`) first,
+inner (`for x in row`) second. Each inner item is collected in turn, preserving
+order.
+""",
+                },
+            ],
+        },
+        {
+            "slug": "type-hints",
+            "title": "Type Hints",
+            "description": "Annotate signatures for tooling, editors, and readers.",
+            "badge": {"id": "type-herald", "name": "Type Herald", "icon": "🏷️"},
+            "missions": [
+                {
+                    "slug": "type-hints-basics",
+                    "title": "Annotating Signatures",
+                    "kind": "standard",
+                    "xp": 50,
+                    "lesson_md": """\
+**Type hints** annotate what a function expects and returns. Python doesn't
+enforce them at runtime — they're for readers, editors, and type checkers like
+`mypy`:
+
+```python
+def total_price(items: list[float], tax: float = 0.0) -> float:
+    return sum(items) * (1 + tax)
+```
+
+Built-in generics read naturally: `list[str]`, `dict[str, int]`,
+`tuple[int, int]`. The annotations live on the function in `__annotations__`.
+Modern Python writes "either a str or None" as `str | None` (no import needed).
+Hints are the cheapest documentation you'll ever write, and they never go stale
+the way a comment can.
+""",
+                    "prompt_md": """\
+Write `total_length(words)` that returns the summed length of the strings,
+annotated as `(words: list[str]) -> int`. Include the type hints — they're
+checked.
+""",
+                    "starter_code": "def total_length(words):\n    ...\n",
+                    "example_tests": """\
+from solution import total_length
+
+def test_basic():
+    assert total_length(["ab", "c"]) == 3
+
+def test_empty():
+    assert total_length([]) == 0
+""",
+                    "hidden_tests": """\
+from solution import total_length
+
+def test_basic():
+    assert total_length(["ab", "c"]) == 3
+
+def test_empty():
+    assert total_length([]) == 0
+
+def test_annotations():
+    ann = total_length.__annotations__
+    assert ann.get("words") == list[str]
+    assert ann.get("return") == int
+""",
+                    "solution_md": """\
+```python
+def total_length(words: list[str]) -> int:
+    return sum(len(word) for word in words)
+```
+
+**Why:** the annotations `list[str]` and `-> int` document intent and let tools
+catch a bad call before you run it. They're stored on
+`total_length.__annotations__` but never enforced at runtime — pass the wrong
+type and Python won't complain; your type checker will.
+""",
+                },
+                {
+                    "slug": "type-hints-boss",
+                    "title": "Boss: Maybe a Value",
+                    "kind": "boss",
+                    "xp": 100,
+                    "prompt_md": """\
+**Boss challenge — hidden tests, no hints.**
+
+Write `first_or_none(items)` that returns the first element, or `None` when the
+list is empty. Annotate it as `(items: list[int]) -> int | None`.
+""",
+                    "starter_code": "def first_or_none(items):\n    ...\n",
+                    "hidden_tests": """\
+from solution import first_or_none
+
+def test_first():
+    assert first_or_none([5, 6]) == 5
+
+def test_empty_is_none():
+    assert first_or_none([]) is None
+
+def test_annotations():
+    ann = first_or_none.__annotations__
+    assert ann.get("items") == list[int]
+    assert ann.get("return") == (int | None)
+""",
+                    "solution_md": """\
+```python
+def first_or_none(items: list[int]) -> int | None:
+    return items[0] if items else None
+```
+
+**Why:** `int | None` is the modern way to say "an int, or nothing" — the
+honest return type for any function that might not find a value. Spelling it out
+forces callers (and type checkers) to handle the `None` case instead of being
+surprised by it.
 """,
                 },
             ],
@@ -113,6 +251,15 @@ Write `sum_all(*args)` that accepts any number of numeric arguments and
 returns their sum. Zero arguments returns `0`.
 """,
                     "starter_code": "def sum_all(*args):\n    ...\n",
+                    "example_tests": """\
+from solution import sum_all
+
+def test_three():
+    assert sum_all(1, 2, 3) == 6
+
+def test_none():
+    assert sum_all() == 0
+""",
                     "hidden_tests": """\
 from solution import sum_all
 
@@ -124,6 +271,16 @@ def test_none():
 
 def test_floats():
     assert sum_all(1.5, 2.5) == 4.0
+""",
+                    "solution_md": """\
+```python
+def sum_all(*args):
+    return sum(args)
+```
+
+**Why:** `*args` gathers every positional argument into a tuple, and `sum`
+already returns `0` for an empty one — so the zero-argument case needs no
+special handling.
 """,
                 },
                 {
@@ -154,6 +311,23 @@ def test_independent():
     a()
     a()
     assert b() == 1
+""",
+                    "solution_md": """\
+```python
+def make_counter():
+    count = 0
+
+    def counter():
+        nonlocal count
+        count += 1
+        return count
+
+    return counter
+```
+
+**Why:** the inner `counter` *closes over* `count`, and `nonlocal` lets it
+rebind that enclosing variable rather than shadowing it. Each call to
+`make_counter` creates a fresh `count`, so the two counters never share state.
 """,
                 },
             ],
@@ -192,6 +366,15 @@ Write a class `Rectangle` constructed as `Rectangle(width, height)` with
 two methods: `area()` and `perimeter()`.
 """,
                     "starter_code": "class Rectangle:\n    def __init__(self, width, height):\n        ...\n",
+                    "example_tests": """\
+from solution import Rectangle
+
+def test_area():
+    assert Rectangle(3, 4).area() == 12
+
+def test_perimeter():
+    assert Rectangle(3, 4).perimeter() == 14
+""",
                     "hidden_tests": """\
 from solution import Rectangle
 
@@ -204,6 +387,24 @@ def test_perimeter():
 def test_square():
     r = Rectangle(5, 5)
     assert r.area() == 25 and r.perimeter() == 20
+""",
+                    "solution_md": """\
+```python
+class Rectangle:
+    def __init__(self, width, height):
+        self.width = width
+        self.height = height
+
+    def area(self):
+        return self.width * self.height
+
+    def perimeter(self):
+        return 2 * (self.width + self.height)
+```
+
+**Why:** `__init__` stores the dimensions on `self`, and each method reads them
+back. The methods compute on demand rather than caching, so the object stays
+correct even if you later allow the width or height to change.
 """,
                 },
                 {
@@ -238,6 +439,162 @@ def test_add_returns_new():
     v = Vector(0, 0)
     w = v + Vector(1, 1)
     assert v == Vector(0, 0) and w == Vector(1, 1)
+""",
+                    "solution_md": """\
+```python
+class Vector:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    def __add__(self, other):
+        return Vector(self.x + other.x, self.y + other.y)
+
+    def __eq__(self, other):
+        return self.x == other.x and self.y == other.y
+
+    def __repr__(self):
+        return f"Vector({self.x}, {self.y})"
+```
+
+**Why:** `__add__` returns a *new* `Vector` (never mutating the operands — see
+`test_add_returns_new`), `__eq__` compares by value so two distinct objects with
+the same components are equal, and `__repr__` gives the unambiguous
+constructor-style string. Together they make `Vector` behave like a built-in.
+""",
+                },
+            ],
+        },
+        {
+            "slug": "dataclasses",
+            "title": "Dataclasses",
+            "description": "Let @dataclass write __init__, __repr__ and __eq__ for you.",
+            "badge": {"id": "dataclass-drafter", "name": "Dataclass Drafter", "icon": "📐"},
+            "missions": [
+                {
+                    "slug": "dataclasses-basics",
+                    "title": "@dataclass",
+                    "kind": "standard",
+                    "xp": 50,
+                    "lesson_md": """\
+The `@dataclass` decorator generates the boilerplate a plain data-holding class
+needs — `__init__`, `__repr__`, and `__eq__` — from annotated fields:
+
+```python
+from dataclasses import dataclass
+
+@dataclass
+class Point:
+    x: int
+    y: int
+```
+
+That's the whole class. `Point(1, 2)` constructs, `repr` gives
+`Point(x=1, y=2)`, and two points with equal fields compare `==`. Fields can
+have defaults (`z: int = 0`), and you can still add your own methods. It's the
+idiomatic way to model records — far less noise than writing the dunders by
+hand (compare the previous quest's `Vector`).
+""",
+                    "prompt_md": """\
+Using `@dataclass`, define `Point` with two annotated `int` fields `x` and `y`.
+Construction (`Point(1, 2)`), equality, and repr must all work automatically.
+""",
+                    "starter_code": (
+                        "from dataclasses import dataclass\n\n\n"
+                        "@dataclass\nclass Point:\n    ...\n"
+                    ),
+                    "example_tests": """\
+from solution import Point
+
+def test_construct():
+    p = Point(1, 2)
+    assert p.x == 1 and p.y == 2
+
+def test_eq():
+    assert Point(1, 2) == Point(1, 2)
+""",
+                    "hidden_tests": """\
+from dataclasses import is_dataclass
+from solution import Point
+
+def test_construct():
+    p = Point(1, 2)
+    assert p.x == 1 and p.y == 2
+
+def test_eq():
+    assert Point(1, 2) == Point(1, 2)
+
+def test_repr():
+    assert repr(Point(1, 2)) == "Point(x=1, y=2)"
+
+def test_is_dataclass():
+    assert is_dataclass(Point)
+""",
+                    "solution_md": """\
+```python
+from dataclasses import dataclass
+
+
+@dataclass
+class Point:
+    x: int
+    y: int
+```
+
+**Why:** the two annotated fields are all `@dataclass` needs to synthesise a
+constructor, a value-based `__eq__`, and a readable `__repr__`. You wrote those
+three dunders by hand for `Vector`; here they come free.
+""",
+                },
+                {
+                    "slug": "dataclasses-boss",
+                    "title": "Boss: Fields with Behavior",
+                    "kind": "boss",
+                    "xp": 100,
+                    "prompt_md": """\
+**Boss challenge — hidden tests, no hints.**
+
+Using `@dataclass`, define `Account` with `owner: str` and a `balance: float`
+that **defaults to `0.0`**. Add a method `deposit(amount)` that increases the
+balance and returns the new balance.
+""",
+                    "starter_code": (
+                        "from dataclasses import dataclass\n\n\n"
+                        "@dataclass\nclass Account:\n    ...\n"
+                    ),
+                    "hidden_tests": """\
+from solution import Account
+
+def test_default_balance():
+    a = Account("ada")
+    assert a.balance == 0.0
+
+def test_deposit():
+    a = Account("grace", 10.0)
+    assert a.deposit(5.0) == 15.0
+    assert a.balance == 15.0
+
+def test_eq():
+    assert Account("x", 5.0) == Account("x", 5.0)
+""",
+                    "solution_md": """\
+```python
+from dataclasses import dataclass
+
+
+@dataclass
+class Account:
+    owner: str
+    balance: float = 0.0
+
+    def deposit(self, amount):
+        self.balance += amount
+        return self.balance
+```
+
+**Why:** a field default (`balance: float = 0.0`) makes that argument optional,
+exactly like a normal parameter default. Dataclasses aren't just dumb records —
+you can hang real behavior like `deposit` right alongside the generated dunders.
 """,
                 },
             ],
@@ -283,6 +640,14 @@ Both must use `with`.
                         "def write_lines(path, lines):\n    ...\n\n\n"
                         "def read_lines(path):\n    ...\n"
                     ),
+                    "example_tests": """\
+from solution import write_lines, read_lines
+
+def test_round_trip(tmp_path):
+    p = tmp_path / "notes.txt"
+    write_lines(p, ["alpha", "beta"])
+    assert read_lines(p) == ["alpha", "beta"]
+""",
                     "hidden_tests": """\
 from solution import write_lines, read_lines
 
@@ -300,6 +665,23 @@ def test_no_trailing_newlines(tmp_path):
     p = tmp_path / "x.txt"
     write_lines(p, ["one"])
     assert read_lines(p)[0] == "one"
+""",
+                    "solution_md": """\
+```python
+def write_lines(path, lines):
+    with open(path, "w") as f:
+        for line in lines:
+            f.write(line + "\\n")
+
+
+def read_lines(path):
+    with open(path) as f:
+        return [line.rstrip("\\n") for line in f]
+```
+
+**Why:** `with` closes the handle automatically, even if an error interrupts
+the loop. Writing appends an explicit `"\\n"` per line; reading strips it back
+off so the round-trip is clean.
 """,
                 },
                 {
@@ -332,6 +714,21 @@ def test_single_line(tmp_path):
     p = tmp_path / "s.txt"
     p.write_text("hello world")
     assert count_lines_words(p) == (1, 2)
+""",
+                    "solution_md": """\
+```python
+def count_lines_words(path):
+    with open(path) as f:
+        text = f.read()
+    if not text:
+        return (0, 0)
+    return (len(text.splitlines()), len(text.split()))
+```
+
+**Why:** reading once into `text` lets both counts come from the same content.
+`splitlines()` counts lines without a spurious empty trailing entry, and
+`split()` with no argument splits on any run of whitespace — so the empty file
+short-circuits cleanly to `(0, 0)`.
 """,
                 },
             ],
@@ -374,6 +771,16 @@ Using the `math` module, write:
                         "def circle_area(radius):\n    ...\n\n\n"
                         "def hypotenuse(a, b):\n    ...\n"
                     ),
+                    "example_tests": """\
+import math
+from solution import circle_area, hypotenuse
+
+def test_circle():
+    assert abs(circle_area(1) - math.pi) < 1e-9
+
+def test_hypotenuse():
+    assert hypotenuse(3, 4) == 5.0
+""",
                     "hidden_tests": """\
 import math
 from solution import circle_area, hypotenuse
@@ -386,6 +793,24 @@ def test_circle_scaled():
 
 def test_hypotenuse():
     assert hypotenuse(3, 4) == 5.0
+""",
+                    "solution_md": """\
+```python
+import math
+
+
+def circle_area(radius):
+    return math.pi * radius ** 2
+
+
+def hypotenuse(a, b):
+    return math.hypot(a, b)
+```
+
+**Why:** reach for the standard library before reinventing it — `math.pi` is
+more precise than any literal you'd type, and `math.hypot` computes
+`sqrt(a² + b²)` correctly (and without intermediate overflow) so you don't have
+to.
 """,
                 },
                 {
@@ -415,6 +840,133 @@ def test_backward():
 
 def test_across_year():
     assert days_between("2025-12-31", "2026-01-01") == 1
+""",
+                    "solution_md": """\
+```python
+from datetime import date
+
+
+def days_between(start, end):
+    start_date = date.fromisoformat(start)
+    end_date = date.fromisoformat(end)
+    return (end_date - start_date).days
+```
+
+**Why:** `date.fromisoformat` parses the `"YYYY-MM-DD"` string directly, and
+subtracting two `date` objects yields a `timedelta` whose `.days` is exactly
+the signed day count — leap years and month lengths handled for you.
+""",
+                },
+            ],
+        },
+        {
+            "slug": "collections-module",
+            "title": "The collections Module",
+            "description": "Counter, defaultdict, and sorting with a key.",
+            "badge": {"id": "collections-conjurer", "name": "Collections Conjurer", "icon": "🎒"},
+            "missions": [
+                {
+                    "slug": "collections-counter",
+                    "title": "Counter & friends",
+                    "kind": "standard",
+                    "xp": 50,
+                    "lesson_md": """\
+The `collections` module has purpose-built containers that replace fiddly
+hand-rolled dict code:
+
+```python
+from collections import Counter, defaultdict
+
+Counter("mississippi")          # {'i': 4, 's': 4, 'p': 2, 'm': 1}
+Counter(words).most_common(3)   # top 3 (word, count) pairs
+
+groups = defaultdict(list)      # missing keys auto-create an empty list
+groups[key].append(value)       # no more `if key not in groups`
+```
+
+Related: **sorting with a key**. `sorted(xs, key=len)` sorts by length;
+`key=lambda w: (-len(w), w)` sorts by length descending, then alphabetically.
+The key function maps each item to what you want to sort *by*.
+""",
+                    "prompt_md": """\
+Using `collections.Counter`, write `word_frequencies(text)` that lowercases
+the text, splits on whitespace, and returns a plain `dict` mapping each word to
+its count.
+""",
+                    "starter_code": (
+                        "from collections import Counter\n\n\n"
+                        "def word_frequencies(text):\n    ...\n"
+                    ),
+                    "example_tests": """\
+from solution import word_frequencies
+
+def test_basic():
+    assert word_frequencies("a b a") == {"a": 2, "b": 1}
+
+def test_case():
+    assert word_frequencies("Hi hi") == {"hi": 2}
+""",
+                    "hidden_tests": """\
+from solution import word_frequencies
+
+def test_basic():
+    assert word_frequencies("a b a") == {"a": 2, "b": 1}
+
+def test_case():
+    assert word_frequencies("Hi hi") == {"hi": 2}
+
+def test_empty():
+    assert word_frequencies("") == {}
+""",
+                    "solution_md": """\
+```python
+from collections import Counter
+
+
+def word_frequencies(text):
+    return dict(Counter(text.lower().split()))
+```
+
+**Why:** `Counter` *is* the tallying loop you wrote by hand back in Tier 1 —
+feed it an iterable and it counts. Wrapping in `dict()` returns a plain mapping,
+though a `Counter` already compares equal to the equivalent dict.
+""",
+                },
+                {
+                    "slug": "collections-sort-boss",
+                    "title": "Boss: Rank and File",
+                    "kind": "boss",
+                    "xp": 100,
+                    "prompt_md": """\
+**Boss challenge — hidden tests, no hints.**
+
+Write `rank_words(words)` that returns the words sorted by length **longest
+first**, breaking ties **alphabetically**. `rank_words(["bb", "a", "ccc", "dd"])`
+returns `["ccc", "bb", "dd", "a"]`. Use `sorted` with a `key`.
+""",
+                    "starter_code": "def rank_words(words):\n    ...\n",
+                    "hidden_tests": """\
+from solution import rank_words
+
+def test_basic():
+    assert rank_words(["bb", "a", "ccc", "dd"]) == ["ccc", "bb", "dd", "a"]
+
+def test_alpha_tiebreak():
+    assert rank_words(["ab", "ba"]) == ["ab", "ba"]
+
+def test_empty():
+    assert rank_words([]) == []
+""",
+                    "solution_md": """\
+```python
+def rank_words(words):
+    return sorted(words, key=lambda w: (-len(w), w))
+```
+
+**Why:** a **tuple key** sorts by its first element, then the second as a
+tiebreak. `-len(w)` flips length into descending order (bigger length → smaller
+number → sorts first), and `w` then orders equal-length words alphabetically —
+all in one stable pass.
 """,
                 },
             ],
@@ -456,6 +1008,17 @@ Write `validate_age(age)`:
 - raises `ValueError` if it's out of range
 """,
                     "starter_code": "def validate_age(age):\n    ...\n",
+                    "example_tests": """\
+import pytest
+from solution import validate_age
+
+def test_valid():
+    assert validate_age(30) == 30
+
+def test_type_error():
+    with pytest.raises(TypeError):
+        validate_age("30")
+""",
                     "hidden_tests": """\
 import pytest
 from solution import validate_age
@@ -478,6 +1041,20 @@ def test_bool_rejected():
 def test_value_error():
     with pytest.raises(ValueError):
         validate_age(131)
+""",
+                    "solution_md": """\
+```python
+def validate_age(age):
+    if isinstance(age, bool) or not isinstance(age, int):
+        raise TypeError("age must be an int")
+    if age < 0 or age > 130:
+        raise ValueError("age out of range")
+    return age
+```
+
+**Why:** the `bool` check comes *first* because `isinstance(True, int)` is
+`True` — without ruling out `bool` explicitly, `True` would sneak through as a
+valid age. Only after the type is settled do you range-check the value.
 """,
                 },
                 {
@@ -518,6 +1095,23 @@ def test_insufficient():
 def test_non_positive():
     with pytest.raises(ValueError):
         transfer({"a": 10, "b": 0}, "a", "b", 0)
+""",
+                    "solution_md": """\
+```python
+def transfer(balances, src, dst, amount):
+    if src not in balances or dst not in balances:
+        raise KeyError("unknown account")
+    if amount <= 0 or amount > balances[src]:
+        raise ValueError("invalid amount")
+    balances[src] -= amount
+    balances[dst] += amount
+    return balances
+```
+
+**Why:** all validation happens *before* any mutation — that's what lets the
+failure cases leave `balances` untouched (`test_insufficient` checks exactly
+this). Checking existence first also means the `balances[src]` comparison can't
+itself raise a `KeyError`.
 """,
                 },
             ],
@@ -579,6 +1173,31 @@ def test_default_qty():
     c = ShoppingCart()
     c.add("shield", 50.0)
     assert len(c) == 1
+""",
+                    "solution_md": """\
+```python
+class ShoppingCart:
+    def __init__(self):
+        self.lines = {}
+
+    def add(self, name, price, qty=1):
+        _, existing = self.lines.get(name, (price, 0))
+        self.lines[name] = (price, existing + qty)
+
+    def remove(self, name):
+        del self.lines[name]
+
+    def total(self):
+        return sum(price * qty for price, qty in self.lines.values())
+
+    def __len__(self):
+        return sum(qty for _, qty in self.lines.values())
+```
+
+**Why:** each line stores `(price, qty)`; `add` accumulates quantity by reading
+the current pair (defaulting to `qty 0`) and adding to it. `del` on a missing
+key raises `KeyError` for free — no manual check needed — and `__len__` makes
+`len(cart)` return total units by summing the quantities.
 """,
                 },
             ],

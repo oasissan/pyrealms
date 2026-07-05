@@ -12,7 +12,7 @@ Rules (from the design spec):
 from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 
-from ..models import Challenge, Quest, Submission, Tier
+from ..models import Challenge, Quest, SolutionReveal, Submission, Tier
 
 
 def passed_challenge_ids(db: Session) -> set[int]:
@@ -21,6 +21,25 @@ def passed_challenge_ids(db: Session) -> set[int]:
             select(Submission.challenge_id).where(Submission.passed.is_(True)).distinct()
         ).scalars()
     )
+
+
+def is_revealed(db: Session, challenge_id: int) -> bool:
+    """Whether the learner gave up and revealed this challenge's solution."""
+    return (
+        db.execute(
+            select(SolutionReveal.id).where(
+                SolutionReveal.challenge_id == challenge_id
+            )
+        ).first()
+        is not None
+    )
+
+
+def reveal_solution(db: Session, challenge_id: int) -> None:
+    """Record a give-up (idempotent — revealing twice is a no-op)."""
+    if not is_revealed(db, challenge_id):
+        db.add(SolutionReveal(challenge_id=challenge_id))
+        db.flush()
 
 
 def attempts_count(db: Session, challenge_id: int) -> int:
@@ -80,7 +99,12 @@ def build_map(db: Session, current_level: int) -> list[dict]:
     map_state = []
     previous_tier_boss_passed = True  # nothing gates tier 1
     for tier in tiers:
-        tier_unlocked = previous_tier_boss_passed and current_level >= tier.min_level
+        # Optional realms (e.g. the DSA proving grounds) unlock on level alone
+        # and never require the previous realm's boss.
+        if tier.optional:
+            tier_unlocked = current_level >= tier.min_level
+        else:
+            tier_unlocked = previous_tier_boss_passed and current_level >= tier.min_level
         regular_quests = [q for q in tier.quests if not q.is_boss_battle]
         regular_complete = all(
             all(c.id in passed for c in q.challenges) for q in regular_quests
@@ -126,7 +150,7 @@ def build_map(db: Session, current_level: int) -> list[dict]:
             {
                 "tier": tier,
                 "unlocked": tier_unlocked,
-                "locked_by_level": previous_tier_boss_passed
+                "locked_by_level": (tier.optional or previous_tier_boss_passed)
                 and current_level < tier.min_level,
                 "done": tier_passed,
                 "total": tier_total,
@@ -134,7 +158,10 @@ def build_map(db: Session, current_level: int) -> list[dict]:
                 "quests": quest_states,
             }
         )
-        previous_tier_boss_passed = tier_boss_passed
+        # Optional realms are transparent to the gating chain — they neither
+        # require nor provide a gate for adjacent realms.
+        if not tier.optional:
+            previous_tier_boss_passed = tier_boss_passed
 
     return map_state
 

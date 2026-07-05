@@ -10,6 +10,7 @@
   {% if show_gamification and best %}
   <p class="muted">Best: {{ best.attempts_to_first_pass }} attempt{{ "s" if best.attempts_to_first_pass != 1 }} to first clear{% if best.best_time_seconds %}, fastest {{ "%.0f"|format(best.best_time_seconds) }}s{% endif %}.</p>
   {% endif %}
+  {% include "partials/solution.html" %}
   <p><a href="/quest/{{ challenge.quest.slug }}">← Back to quest</a> · <a href="/">World Map</a></p>
 </div>
 
@@ -72,6 +73,11 @@
   {% endif %}
   <pre class="output">{{ output }}</pre>
 </div>
+{% endif %}
+
+{% if passed %}
+{# Clear the lingering "give up" button — the solution now shows above. #}
+<div id="solution-area" hx-swap-oob="innerHTML"></div>
 {% endif %}
 
 {# Out-of-band HUD refresh so the XP bar / streak tick instantly #}

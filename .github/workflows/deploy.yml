@@ -16,13 +16,8 @@ jobs:
       - run: pip install -r requirements.txt
       - name: Import check
         run: python -c "import app.main"
-      - name: Verify every challenge is solvable
-        run: |
-          python -c "
-          from app.content import ALL_TIERS
-          count = sum(len(m) for t in ALL_TIERS for q in t['quests'] for m in [q['missions']])
-          print(f'{count} challenges seeded across {len(ALL_TIERS)} tiers')
-          "
+      - name: Run tests (grading + every mission's canonical solution)
+        run: pytest -q
 
   deploy:
     needs: test

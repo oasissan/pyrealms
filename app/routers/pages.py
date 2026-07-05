@@ -80,6 +80,7 @@ def mission_page(slug: str, request: Request, db: Session = Depends(get_db)):
     if not state["unlocked"]:
         raise HTTPException(403, "This mission is still locked")
     is_boss = challenge.kind in ("boss", "tier_boss")
+    revealed = progress.is_revealed(db, challenge.id)
     return templates.TemplateResponse(
         request,
         "mission.html",
@@ -89,6 +90,14 @@ def mission_page(slug: str, request: Request, db: Session = Depends(get_db)):
             "is_boss": is_boss,
             "lesson_html": render_md(challenge.lesson_md) if not is_boss else "",
             "prompt_html": render_md(challenge.prompt_md),
+            # Example tests are illustrative and shown only on non-boss missions.
+            "example_tests": challenge.example_tests if not is_boss else "",
+            # The canonical solution shows once the mission is cleared, or once
+            # the learner gives up and reveals it.
+            "solution_html": render_md(challenge.solution_md)
+            if (state["passed"] or revealed) and challenge.solution_md
+            else "",
+            "gave_up": revealed and not state["passed"],
             "best": progress.personal_best(db, challenge.id),
             "attempts": progress.attempts_count(db, challenge.id),
             "started_at": time.time(),

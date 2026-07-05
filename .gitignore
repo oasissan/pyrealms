@@ -2,5 +2,6 @@ __pycache__/
 *.pyc
 .venv/
 app.db
+app.db.bak
 .DS_Store
 .pytest_cache/

@@ -1,0 +1,6 @@
+{% if solution_html %}
+<details class="solution-reveal" open>
+  <summary>💡 Canonical solution{% if gave_up %} <span class="muted">— revealed</span>{% else %} — compare it with yours{% endif %}</summary>
+  <div class="solution-body">{{ solution_html | safe }}</div>
+</details>
+{% endif %}
