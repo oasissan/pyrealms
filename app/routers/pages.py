@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 from .. import levels
 from ..database import get_db
 from ..models import AchievementEarned, AchievementRule, Challenge, Quest, Settings
-from ..services import progress, streak, xp
+from ..services import progress, quiz, streak, xp
 from ..templating import templates
 
 router = APIRouter()
@@ -64,7 +64,11 @@ def quest_page(slug: str, request: Request, db: Session = Depends(get_db)):
     return templates.TemplateResponse(
         request,
         "quest.html",
-        {"quest_state": quest_state, **hud},
+        {
+            "quest_state": quest_state,
+            "quiz_state": quiz.quiz_state_for_quest(db, quest.id),
+            **hud,
+        },
     )
 
 
@@ -101,6 +105,28 @@ def mission_page(slug: str, request: Request, db: Session = Depends(get_db)):
             "best": progress.personal_best(db, challenge.id),
             "attempts": progress.attempts_count(db, challenge.id),
             "started_at": time.time(),
+            **hud,
+        },
+    )
+
+
+@router.get("/mission/{slug}/history")
+def mission_history(slug: str, request: Request, db: Session = Depends(get_db)):
+    challenge = db.execute(
+        select(Challenge).where(Challenge.slug == slug)
+    ).scalar_one_or_none()
+    if challenge is None:
+        raise HTTPException(404, "Unknown mission")
+    hud = hud_context(db)
+    state = progress.challenge_state(db, challenge, hud["progress"]["level"])
+    if not state["unlocked"]:
+        raise HTTPException(403, "This mission is still locked")
+    return templates.TemplateResponse(
+        request,
+        "history.html",
+        {
+            "challenge": challenge,
+            "submissions": progress.submission_history(db, challenge.id),
             **hud,
         },
     )

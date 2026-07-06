@@ -15,6 +15,21 @@ def iter_missions():
                 yield mission
 
 
+def teaching_quests(tier):
+    """The quests in a tier that carry a lesson and therefore a quiz — every
+    quest except the single-mission boss-battle quest that gates the tier."""
+    return [q for q in tier["quests"] if not q.get("is_boss_battle")]
+
+
+def iter_quiz_questions():
+    """Yield (quest, order, question_dict) for every MCQ across all tiers, for
+    seeding and tests. Order is 1-based within each quest."""
+    for tier in ALL_TIERS:
+        for quest in teaching_quests(tier):
+            for order, question in enumerate(quest.get("quiz", []), start=1):
+                yield quest, order, question
+
+
 def solution_code(solution_md: str) -> str | None:
     """Extract the runnable Python from a mission's ``solution_md`` — the
     first ```python fenced block. Returns None if there isn't one."""

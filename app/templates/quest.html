@@ -20,4 +20,18 @@
   </li>
   {% endfor %}
 </ol>
+
+{% if quiz_state %}
+<section class="knowledge-check">
+  <h2>🧠 Knowledge Check</h2>
+  <p class="muted">
+    Quick questions on this quest.
+    {% if show_gamification %}Answer one correctly on your first try to earn XP.{% endif %}
+  </p>
+  {% for s in quiz_state %}
+    {% set q = {"question": s.question, "index": s.question.order, "resolved": s.resolved, "chosen_index": none, "correct": none} %}
+    {% include "partials/quiz_question.html" %}
+  {% endfor %}
+</section>
+{% endif %}
 {% endblock %}

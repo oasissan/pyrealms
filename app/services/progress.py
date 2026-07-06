@@ -50,6 +50,20 @@ def attempts_count(db: Session, challenge_id: int) -> int:
     )
 
 
+def submission_history(db: Session, challenge_id: int) -> list[Submission]:
+    """Every past submission for a challenge, newest first — lets the learner
+    scroll back through code they've tried before."""
+    return (
+        db.execute(
+            select(Submission)
+            .where(Submission.challenge_id == challenge_id)
+            .order_by(Submission.created_at.desc())
+        )
+        .scalars()
+        .all()
+    )
+
+
 def personal_best(db: Session, challenge_id: int) -> dict | None:
     """Best (fastest) passing solve and attempts-to-first-pass."""
     passes = (

@@ -1,0 +1,40 @@
+{#
+  One Knowledge Check question. Context var `q`:
+    q.question      — QuizQuestion ORM row
+    q.index         — 1-based number to show
+    q.resolved      — answered correctly (locked; reveal correct + explanation)
+    q.chosen_index  — option just clicked this render, or None
+    q.correct       — whether that click was correct, or None
+  Rendered on the quest page (fresh, chosen_index None) and swapped in by the
+  answer route (outerHTML on #quiz-q-<id>).
+#}
+<div class="quiz-q {{ 'resolved' if q.resolved }}" id="quiz-q-{{ q.question.id }}">
+  <div class="quiz-prompt"><span class="quiz-num">{{ q.index }}</span>
+    <div class="quiz-prompt-body">{{ q.question.prompt_md | md | safe }}</div>
+  </div>
+
+  <div class="quiz-options">
+    {% for opt in q.question.options %}
+      {% set is_correct = loop.index0 == q.question.correct_index %}
+      {% set is_chosen = q.chosen_index is not none and loop.index0 == q.chosen_index %}
+      {% if q.resolved %}
+        <div class="quiz-opt static {{ 'correct' if is_correct }}{{ ' chosen-wrong' if is_chosen and not is_correct }}">
+          <span class="quiz-mark">{{ '✓' if is_correct else '' }}</span>{{ opt }}
+        </div>
+      {% else %}
+        <button type="button" class="quiz-opt {{ 'wrong' if is_chosen }}"
+                hx-post="/quiz/{{ q.question.id }}/answer"
+                hx-vals='{"chosen": {{ loop.index0 }}}'
+                hx-target="#quiz-q-{{ q.question.id }}" hx-swap="outerHTML">
+          <span class="quiz-mark">{{ '✗' if is_chosen else '' }}</span>{{ opt }}
+        </button>
+      {% endif %}
+    {% endfor %}
+  </div>
+
+  {% if q.resolved %}
+  <div class="quiz-explanation">💡 {{ q.question.explanation_md | md | safe }}</div>
+  {% elif q.chosen_index is not none %}
+  <p class="quiz-nudge">Not quite — give it another try.</p>
+  {% endif %}
+</div>

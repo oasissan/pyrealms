@@ -4,19 +4,39 @@ import random
 import urllib.parse
 import httpx
 
+_FRIENDLY_AUTH_MESSAGE = (
+    "Gemini session expired or rejected. Open Gemini Copilot settings and "
+    "click Auto-detect (or paste fresh cookies from gemini.google.com)."
+)
+
+
+class GeminiAuthError(Exception):
+    """Gemini rejected the session cookies (stale/rotated __Secure-1PSIDTS)."""
+
+    def __init__(self, message: str = _FRIENDLY_AUTH_MESSAGE):
+        super().__init__(message)
+
+
 class GeminiWebClient:
-    def __init__(self, secure_1psid: str, secure_1psidts: str = None):
+    def __init__(
+        self,
+        secure_1psid: str,
+        secure_1psidts: str | None = None,
+        transport: httpx.BaseTransport | None = None,
+    ):
         self.secure_1psid = secure_1psid
         self.secure_1psidts = secure_1psidts
-        
-        # Build cookies dictionary
-        cookies = {
-            "__Secure-1PSID": secure_1psid,
-        }
+
+        # Seed cookies with an explicit .google.com domain so a Set-Cookie
+        # rotation from Google overwrites the jar entry instead of adding a
+        # conflicting duplicate.
+        cookies = httpx.Cookies()
+        cookies.set("__Secure-1PSID", secure_1psid, domain=".google.com")
         if secure_1psidts:
-            cookies["__Secure-1PSIDTS"] = secure_1psidts
-            
+            cookies.set("__Secure-1PSIDTS", secure_1psidts, domain=".google.com")
+
         self.client = httpx.Client(
+            transport=transport,
             headers={
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
                 "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
@@ -31,11 +51,31 @@ class GeminiWebClient:
             timeout=30.0
         )
 
+    @property
+    def current_psidts(self) -> str | None:
+        """The freshest __Secure-1PSIDTS known — Google rotates this cookie
+        via Set-Cookie on page loads; the caller should persist it."""
+        for cookie in self.client.cookies.jar:
+            if cookie.name == "__Secure-1PSIDTS" and cookie.value != self.secure_1psidts:
+                return cookie.value
+        return self.secure_1psidts
+
+    def close(self) -> None:
+        self.client.close()
+
+    def __enter__(self) -> "GeminiWebClient":
+        return self
+
+    def __exit__(self, *exc_info) -> None:
+        self.close()
+
     def extract_tokens(self) -> tuple[str, str, str]:
         """
         Extracts SNlM0e (at), cfb2h (bl), and FdrFJe (sid) from gemini.google.com/app
         """
         resp = self.client.get("https://gemini.google.com/app")
+        if resp.status_code in (401, 403):
+            raise GeminiAuthError()
         if resp.status_code != 200:
             raise Exception(
                 f"Could not reach Gemini (Status {resp.status_code}). Please make sure your cookies are correct."
@@ -56,17 +96,27 @@ class GeminiWebClient:
         sid = sid_match.group(1) if sid_match else ""
         
         if not at or not bl:
-            raise Exception(
+            raise GeminiAuthError(
                 "Gemini session not found. Please log into gemini.google.com, "
                 "extract a fresh __Secure-1PSID cookie, and try again."
             )
-            
+
         return at, bl, sid
 
     def send_message(self, prompt: str, conversation_id: str = "", parent_message_id: str = "") -> tuple[str, str, str]:
         """
         Sends a message to Gemini and returns (reply_text, new_conversation_id, new_message_id)
+
+        Retries once on an auth failure: the token-scrape GET usually picks up
+        a rotated __Secure-1PSIDTS via Set-Cookie, so the second attempt runs
+        with a fresh cookie jar.
         """
+        try:
+            return self._attempt_send(prompt, conversation_id, parent_message_id)
+        except GeminiAuthError:
+            return self._attempt_send(prompt, conversation_id, parent_message_id)
+
+    def _attempt_send(self, prompt: str, conversation_id: str, parent_message_id: str) -> tuple[str, str, str]:
         at, bl, sid = self.extract_tokens()
         
         # Format identical to prompt_enhancer's background.ts StreamGenerate call
@@ -103,6 +153,8 @@ class GeminiWebClient:
             }
         )
         
+        if resp.status_code in (401, 403):
+            raise GeminiAuthError()
         if resp.status_code != 200:
             raise Exception(f"Gemini returned status {resp.status_code}: {resp.text[:200]}")
             

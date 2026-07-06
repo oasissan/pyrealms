@@ -12,6 +12,63 @@ TIER = {
             "title": "Iterators & Generators",
             "description": "yield, lazy evaluation, and the iterator protocol.",
             "badge": {"id": "generator-guru", "name": "Generator Guru", "icon": "♻️"},
+            "quiz": [
+                {
+                    "prompt_md": "What makes a function a **generator** function?",
+                    "options": [
+                        "The `@generator` decorator",
+                        "It contains at least one `yield`",
+                        "It returns a list",
+                        "It has no `return`",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "The mere presence of `yield` in the body turns a function into a generator function — calling it returns a generator object instead of running the body.",
+                },
+                {
+                    "prompt_md": "When you *call* a generator function, how much of its body runs immediately?",
+                    "options": [
+                        "All of it",
+                        "None of it — execution starts on the first `next()`",
+                        "Up to the first `return`",
+                        "Only the last line",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "Calling a generator function runs *none* of the body; it returns a generator that executes lazily, advancing to the next `yield` each time you call `next()`.",
+                },
+                {
+                    "prompt_md": "Why can `sum(x*x for x in range(10**9))` avoid running out of memory?",
+                    "options": [
+                        "It uses less precise floats",
+                        "The generator produces one value at a time instead of building a giant list",
+                        "`range` is capped at a million",
+                        "`sum` compresses the data",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "A generator expression holds O(1) memory — each squared value is produced and consumed by `sum` one at a time, so the full billion-element sequence never exists at once.",
+                },
+                {
+                    "prompt_md": "Which protocol do generators implement automatically?",
+                    "options": [
+                        "The context-manager protocol (`__enter__`/`__exit__`)",
+                        "The iterator protocol (`__iter__`/`__next__`)",
+                        "The sequence protocol (`__getitem__`)",
+                        "The descriptor protocol",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "Generators implement `__iter__`/`__next__` for free, so they work anywhere an iterator is expected — `for` loops, `list()`, `sum()`, and so on.",
+                },
+                {
+                    "prompt_md": "Why is an infinite `while True: yield ...` generator safe?",
+                    "options": [
+                        "Python caps it at 1000 iterations",
+                        "It only computes as far as the caller actually pulls values",
+                        "Generators can't loop forever",
+                        "It runs in a background thread",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "Laziness makes it safe: the loop advances only when the caller requests the next value (e.g. via `itertools.islice`), so it never runs away on its own.",
+                },
+            ],
             "missions": [
                 {
                     "slug": "generators-countdown",
@@ -132,6 +189,63 @@ it only computes as far as the caller pulls. The tuple assignment
             "title": "Decorators",
             "description": "Functions wrapping functions, done properly with functools.wraps.",
             "badge": {"id": "decorator-wizard", "name": "Decorator Wizard", "icon": "🎩"},
+            "quiz": [
+                {
+                    "prompt_md": "What does a decorator fundamentally do?",
+                    "options": [
+                        "Renames a function",
+                        "Takes a function and returns a replacement function",
+                        "Deletes a function",
+                        "Runs a function twice",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "A decorator receives a function and returns something to bind in its place — usually a wrapper that adds behavior around the original.",
+                },
+                {
+                    "prompt_md": "`@logged` above `def add(...)` is shorthand for what?",
+                    "options": [
+                        "`add = logged(add)`",
+                        "`logged(add())`",
+                        "`add.logged()`",
+                        "`import logged`",
+                    ],
+                    "correct": 0,
+                    "explanation_md": "Decorator syntax is pure sugar: `@logged` on `add` means `add = logged(add)` — the name is rebound to whatever the decorator returns.",
+                },
+                {
+                    "prompt_md": "Why should a wrapper use `*args, **kwargs`?",
+                    "options": [
+                        "To make it run faster",
+                        "So it forwards any arguments to the wrapped function unchanged",
+                        "It's required by Python syntax",
+                        "To limit the function to two arguments",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "`*args, **kwargs` lets the wrapper accept and pass through *any* call signature to the original function — essential for a general-purpose decorator.",
+                },
+                {
+                    "prompt_md": "What does `@functools.wraps(func)` preserve on the wrapper?",
+                    "options": [
+                        "The function's speed",
+                        "The original's `__name__`, docstring, and other identity metadata",
+                        "The return value",
+                        "The argument count",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "Without `functools.wraps`, the decorated function introspects as `wrapper` and loses its docstring. `wraps` copies the original's identity onto the wrapper.",
+                },
+                {
+                    "prompt_md": "In `memoize`, why can the `args` tuple be used directly as a dict key?",
+                    "options": [
+                        "Tuples are mutable",
+                        "Tuples are hashable (when their contents are)",
+                        "Dicts accept any key",
+                        "It's converted to a string first",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "A tuple of hashable arguments is itself hashable, so it works as a cache key directly — which is how `memoize` (and `functools.lru_cache`) index results by call arguments.",
+                },
+            ],
             "missions": [
                 {
                     "slug": "decorators-basics",
@@ -288,6 +402,63 @@ only once). This is `functools.lru_cache` in miniature.
             "title": "Custom Context Managers",
             "description": "__enter__/__exit__ and @contextmanager.",
             "badge": {"id": "context-commander", "name": "Context Commander", "icon": "🚪"},
+            "quiz": [
+                {
+                    "prompt_md": "In `with expr as x:`, what becomes bound to `x`?",
+                    "options": [
+                        "`expr` itself, always",
+                        "The return value of `expr.__enter__()`",
+                        "`None`",
+                        "The return value of `expr.__exit__()`",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "`with` calls `expr.__enter__()` and binds *its return value* to `x` — which is why `__enter__` often does `return self`.",
+                },
+                {
+                    "prompt_md": "What does `__exit__` returning a **truthy** value do?",
+                    "options": [
+                        "Re-raises the exception",
+                        "Swallows (suppresses) the exception that occurred in the block",
+                        "Restarts the `with` block",
+                        "Nothing",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "A truthy return from `__exit__` tells Python the exception was handled, so it's suppressed. Returning falsy (or `None`) lets it propagate.",
+                },
+                {
+                    "prompt_md": "Is `__exit__` guaranteed to run if the `with` block raises?",
+                    "options": [
+                        "No, exceptions skip it",
+                        "Yes — it always runs, receiving the exception details",
+                        "Only if you catch the exception first",
+                        "Only for file objects",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "`__exit__(exc_type, exc, tb)` always runs on block exit, normal or exceptional — that's the whole point of a context manager, and where cleanup belongs.",
+                },
+                {
+                    "prompt_md": "With `@contextlib.contextmanager`, which code is the *setup* phase?",
+                    "options": [
+                        "Everything after `yield`",
+                        "Everything before `yield`",
+                        "The `yield` line only",
+                        "The function's return value",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "In a `@contextmanager` generator, code before `yield` runs on entry (setup) and code after runs on exit (teardown) — wrap the `yield` in `try/finally` for guaranteed cleanup.",
+                },
+                {
+                    "prompt_md": "In the `transaction` rollback, why is a bare `raise` used after restoring state?",
+                    "options": [
+                        "To start a new exception",
+                        "To re-raise the original exception so the caller still sees it",
+                        "To suppress the error",
+                        "To log the error",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "A bare `raise` inside an `except` re-raises the current exception unchanged — so state is rolled back *and* the caller still observes the failure.",
+                },
+            ],
             "missions": [
                 {
                     "slug": "context-suppress",
@@ -445,6 +616,58 @@ exact prior contents — removing keys added inside the block too — and the ba
             "title": "Advanced OOP",
             "description": "ABCs, mixins, and the Method Resolution Order.",
             "badge": {"id": "mro-sage", "name": "MRO Sage", "icon": "🧬"},
+            "quiz": [
+                {
+                    "prompt_md": "What happens if you try to instantiate an ABC with an unimplemented `@abstractmethod`?",
+                    "options": [
+                        "It works, returning None",
+                        "Python raises `TypeError` — you can't instantiate it",
+                        "It silently creates an empty object",
+                        "It raises `NotImplementedError`",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "An ABC with abstract methods can't be instantiated directly; Python raises `TypeError` until a subclass implements every abstract method.",
+                },
+                {
+                    "prompt_md": "What is the **MRO**?",
+                    "options": [
+                        "Memory Resource Optimizer",
+                        "Method Resolution Order — the sequence Python searches for attributes",
+                        "Module Reload Order",
+                        "Multiple Return Objects",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "The Method Resolution Order (computed by C3 linearization) is the ordered list of classes Python walks when looking up an attribute or method. Inspect it via `Cls.__mro__`.",
+                },
+                {
+                    "prompt_md": "What is a **mixin**?",
+                    "options": [
+                        "A class that can't be subclassed",
+                        "A small class that adds one behavior, designed to sit early in the MRO",
+                        "A function that mixes two dicts",
+                        "An abstract base class",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "A mixin is a focused class contributing a single capability (like `to_json`) to whatever class mixes it in, without being a standalone object itself.",
+                },
+                {
+                    "prompt_md": "How do you inspect a class's method resolution order?",
+                    "options": ["`Cls.mro_list`", "`Cls.__mro__`", "`mro(Cls)`", "`Cls.__bases__`"],
+                    "correct": 1,
+                    "explanation_md": "`Cls.__mro__` (a tuple) shows the exact lookup order. `__bases__` only lists direct parents, not the full linearization.",
+                },
+                {
+                    "prompt_md": "Why can `JsonMixin.to_json` serialize any class that mixes it in?",
+                    "options": [
+                        "It hard-codes the fields",
+                        "It reads `self.__dict__`, which holds whatever instance attributes exist",
+                        "It only works on `Point`",
+                        "It requires a schema",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "By dumping `self.__dict__`, the mixin serializes whatever instance attributes the concrete class happens to have — it doesn't need to know them in advance.",
+                },
+            ],
             "missions": [
                 {
                     "slug": "oop-abc",
@@ -607,6 +830,53 @@ deterministic, and `JsonMixin` sits in `Point.__mro__` so the method resolves.
             "title": "Functional Tools",
             "description": "map/filter/reduce, itertools, functools.",
             "badge": {"id": "lambda-lord", "name": "Lambda Lord", "icon": "λ"},
+            "quiz": [
+                {
+                    "prompt_md": "What do `map(f, xs)` and `filter(pred, xs)` return in Python 3?",
+                    "options": [
+                        "Lists",
+                        "Lazy iterators (wrap in `list()` to realize)",
+                        "Tuples",
+                        "Sets",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "Both return lazy iterators that compute on demand; call `list()` on them to materialize the results.",
+                },
+                {
+                    "prompt_md": "Where does `reduce` live in modern Python?",
+                    "options": ["It's a built-in", "In `functools`", "In `itertools`", "In `operator`"],
+                    "correct": 1,
+                    "explanation_md": "`reduce` was moved out of built-ins in Python 3; you import it from `functools`.",
+                },
+                {
+                    "prompt_md": "What does `reduce(lambda a, b: a + b, [1, 2, 3], 0)` compute?",
+                    "options": ["`[1, 2, 3, 0]`", "`6`", "`0`", "`123`"],
+                    "correct": 1,
+                    "explanation_md": "`reduce` folds left, accumulating `((0+1)+2)+3 = 6`. The `0` is the initial value / seed.",
+                },
+                {
+                    "prompt_md": "In `product_of_odds`, why pass `1` as `reduce`'s initial value?",
+                    "options": [
+                        "It's arbitrary",
+                        "It's the identity for multiplication, so the empty case returns `1` instead of erroring",
+                        "To skip the first element",
+                        "To make the result a float",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "`1` is multiplication's identity and a safe seed: with no odd numbers, `reduce` returns the init `1` rather than raising on an empty sequence.",
+                },
+                {
+                    "prompt_md": "What does `groups.setdefault(key, []).append(item)` accomplish in one line?",
+                    "options": [
+                        "Overwrites the key each time",
+                        "Returns the existing list for `key` (or installs a new one), then appends",
+                        "Deletes the key",
+                        "Sorts the group",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "`setdefault` returns the current list or inserts a fresh `[]` if the key is new, so the `append` always targets the right group's list — the grouping idiom.",
+                },
+            ],
             "missions": [
                 {
                     "slug": "functional-reduce",
@@ -727,6 +997,63 @@ group.
             "title": "Exception Chaining & Custom Exceptions",
             "description": "raise ... from ..., exception hierarchies, __cause__.",
             "badge": {"id": "exception-alchemist", "name": "Exception Alchemist", "icon": "⚗️"},
+            "quiz": [
+                {
+                    "prompt_md": "How do you define a custom exception type?",
+                    "options": [
+                        "`def MyError(): raise`",
+                        "Subclass `Exception`: `class MyError(Exception): pass`",
+                        "`MyError = Exception()`",
+                        "`raise custom MyError`",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "Domain-specific errors are just subclasses of `Exception` (often with an empty body) — the *type* itself carries the meaning.",
+                },
+                {
+                    "prompt_md": "Why define a custom exception instead of raising a generic `ValueError`?",
+                    "options": [
+                        "It's faster",
+                        "Callers can catch *your* error precisely without also catching unrelated ValueErrors",
+                        "ValueError is deprecated",
+                        "It uses less memory",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "A specific type lets callers write `except InvalidConfigError` and handle exactly your failure, rather than a broad `except ValueError` that might swallow other bugs.",
+                },
+                {
+                    "prompt_md": "What does `raise NewError(...) from original` set?",
+                    "options": [
+                        "Nothing special",
+                        "`__cause__` — explicitly chaining the new error to the original",
+                        "The error message only",
+                        "A retry counter",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "`raise ... from ...` sets `__cause__` on the new exception, so the traceback shows the new error was *directly caused by* the original one.",
+                },
+                {
+                    "prompt_md": "How do libraries typically structure their exceptions?",
+                    "options": [
+                        "One giant exception for everything",
+                        "One base exception with a hierarchy under it, so users can catch broadly or narrowly",
+                        "No custom exceptions",
+                        "Only built-in exceptions",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "A base exception plus specific subclasses lets users catch the whole library's errors (`except LibError`) or a single precise one — the best of both.",
+                },
+                {
+                    "prompt_md": "In the chained `fetch_value`, what will `exc.__cause__` be after a missing key?",
+                    "options": [
+                        "`None`",
+                        "The original `KeyError`",
+                        "A `ValueError`",
+                        "The dict itself",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "Because it does `raise LookupFailedError(key) from exc` inside `except KeyError as exc`, the new error's `__cause__` is exactly that original `KeyError`.",
+                },
+            ],
             "missions": [
                 {
                     "slug": "exceptions-custom",

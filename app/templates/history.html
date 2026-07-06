@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}History — {{ challenge.title }} — PyRealms{% endblock %}
+{% block content %}
+<p><a href="/mission/{{ challenge.slug }}">← {{ challenge.title }}</a></p>
+<h1>📜 Submission history <span class="subtitle">{{ submissions|length }} attempt{{ "s" if submissions|length != 1 }}</span></h1>
+
+{% if not submissions %}
+<p class="muted">No submissions yet — solve this one and your attempts will show up here.</p>
+{% endif %}
+
+<div class="history-list">
+  {% for s in submissions %}
+  <details class="history-card {{ 'pass' if s.passed else 'fail' }}" {% if loop.first %}open{% endif %}>
+    <summary>
+      <span class="tag {{ 'pass-tag' if s.passed else 'fail-tag' }}">{{ '✅ passed' if s.passed else '❌ failed' }}</span>
+      <span class="muted">{{ s.created_at.strftime('%Y-%m-%d %H:%M') }} UTC</span>
+      {% if s.duration_seconds %}<span class="muted">· {{ "%.0f"|format(s.duration_seconds) }}s</span>{% endif %}
+    </summary>
+    <div class="history-body">
+      <pre class="editor history-code"><code>{{ s.code }}</code></pre>
+      {% if not s.passed and s.failing_tests %}
+      <p class="muted">Failing: {% for t in s.failing_tests.split(',') if t %}<code>{{ t }}</code>{{ ", " if not loop.last }}{% endfor %}</p>
+      {% endif %}
+      {% if not s.passed and s.output %}
+      <pre class="output">{{ s.output }}</pre>
+      {% endif %}
+    </div>
+  </details>
+  {% endfor %}
+</div>
+{% endblock %}

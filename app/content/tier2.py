@@ -12,6 +12,58 @@ TIER = {
             "title": "Comprehensions",
             "description": "Build lists, dicts and sets in a single expressive line.",
             "badge": {"id": "comprehension-connoisseur", "name": "Comprehension Connoisseur", "icon": "🧠"},
+            "quiz": [
+                {
+                    "prompt_md": "What does `[x * x for x in nums if x % 2 == 0]` produce for `nums = [1, 2, 3, 4]`?",
+                    "options": ["`[1, 4, 9, 16]`", "`[4, 16]`", "`[2, 4]`", "`[1, 9]`"],
+                    "correct": 1,
+                    "explanation_md": "The `if` filters to even numbers (`2, 4`), then the output expression squares each — giving `[4, 16]`.",
+                },
+                {
+                    "prompt_md": "In a comprehension, what is the correct reading order of the parts?",
+                    "options": [
+                        "condition, loop, output expression",
+                        "output expression, loop, condition",
+                        "loop, output expression, condition",
+                        "output expression, condition, loop",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "Read it left to right as *output expression*, then *loop*, then optional *condition*: `[expr for x in xs if cond]`.",
+                },
+                {
+                    "prompt_md": "Which comprehension builds a **dict** mapping each word to its length?",
+                    "options": [
+                        "`[len(w) for w in words]`",
+                        "`{w: len(w) for w in words}`",
+                        "`{len(w) for w in words}`",
+                        "`(w: len(w) for w in words)`",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "A dict comprehension uses `{key: value for ...}`. `{len(w) for w in words}` (no colon) would be a *set* of lengths.",
+                },
+                {
+                    "prompt_md": "What is the flatten idiom `[x for row in matrix for x in row]` equivalent to?",
+                    "options": [
+                        "Nested loops: outer `for row`, inner `for x`",
+                        "Two independent loops",
+                        "A single loop over `matrix`",
+                        "A dict comprehension",
+                    ],
+                    "correct": 0,
+                    "explanation_md": "Multiple `for` clauses read in the same order as nested `for` statements: the outer loop (`for row in matrix`) comes first, the inner (`for x in row`) second.",
+                },
+                {
+                    "prompt_md": "What's the rule of thumb for when a comprehension is *too much*?",
+                    "options": [
+                        "More than 3 items",
+                        "Beyond one loop and one `if` — use a real loop",
+                        "Any use of a condition",
+                        "Whenever it spans one line",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "Comprehensions shine for one loop and one filter. Past that (nested conditions, side effects), a plain `for` loop is clearer.",
+                },
+            ],
             "missions": [
                 {
                     "slug": "comprehensions-basics",
@@ -117,6 +169,58 @@ order.
             "title": "Type Hints",
             "description": "Annotate signatures for tooling, editors, and readers.",
             "badge": {"id": "type-herald", "name": "Type Herald", "icon": "🏷️"},
+            "quiz": [
+                {
+                    "prompt_md": "Does Python **enforce** type hints at runtime?",
+                    "options": [
+                        "Yes — a wrong type raises `TypeError`",
+                        "No — they're for readers, editors, and type checkers only",
+                        "Only inside classes",
+                        "Only if you `import typing`",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "Hints are never enforced at runtime; pass the wrong type and Python won't complain. Tools like `mypy` are what flag the mismatch.",
+                },
+                {
+                    "prompt_md": "How do you annotate \"a list of strings\" in modern Python?",
+                    "options": ["`List(str)`", "`list[str]`", "`array<str>`", "`str[]`"],
+                    "correct": 1,
+                    "explanation_md": "Built-in generics like `list[str]`, `dict[str, int]`, and `tuple[int, int]` work directly since Python 3.9 — no `typing` import needed.",
+                },
+                {
+                    "prompt_md": "What does the annotation `int | None` mean?",
+                    "options": [
+                        "An int that defaults to None",
+                        "Either an int or None",
+                        "An int or a boolean",
+                        "A list of ints",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "`X | None` is the modern spelling of \"either an `X` or nothing\" — the honest return type for a function that might not find a value.",
+                },
+                {
+                    "prompt_md": "Where do a function's type hints get stored?",
+                    "options": [
+                        "`function.__hints__`",
+                        "`function.__annotations__`",
+                        "`function.__types__`",
+                        "Nowhere — they're discarded",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "Annotations live in the `__annotations__` dict on the function, mapping each parameter (and `return`) to its hint.",
+                },
+                {
+                    "prompt_md": "What's the main practical benefit of adding type hints?",
+                    "options": [
+                        "The code runs faster",
+                        "Documentation and tooling that catches bad calls before runtime",
+                        "Reduced memory usage",
+                        "Automatic input validation",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "Hints are cheap documentation that never goes stale and lets editors and type checkers catch mistakes early — but they don't affect runtime speed or validate inputs.",
+                },
+            ],
             "missions": [
                 {
                     "slug": "type-hints-basics",
@@ -225,6 +329,53 @@ surprised by it.
             "title": "*args, **kwargs & Closures",
             "description": "Flexible signatures and functions that remember.",
             "badge": {"id": "closure-craftsman", "name": "Closure Craftsman", "icon": "🔒"},
+            "quiz": [
+                {
+                    "prompt_md": "Inside `def f(*args):`, what type is `args`?",
+                    "options": ["A list", "A tuple", "A dict", "A set"],
+                    "correct": 1,
+                    "explanation_md": "`*args` collects extra **positional** arguments into a `tuple`.",
+                },
+                {
+                    "prompt_md": "Inside `def f(**kwargs):`, what type is `kwargs`?",
+                    "options": ["A tuple", "A dict", "A list", "A set"],
+                    "correct": 1,
+                    "explanation_md": "`**kwargs` collects extra **keyword** arguments into a `dict` mapping names to values.",
+                },
+                {
+                    "prompt_md": "In the call `f(*my_list, **my_dict)`, what do the stars do?",
+                    "options": [
+                        "Collect arguments into args/kwargs",
+                        "**Unpack** the list into positional args and the dict into keyword args",
+                        "Multiply the arguments",
+                        "Nothing — it's a syntax error",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "On the *calling* side the same stars unpack: list elements become positional arguments, dict items become keyword arguments. This is how decorators forward arbitrary arguments.",
+                },
+                {
+                    "prompt_md": "A **closure** is best described as…",
+                    "options": [
+                        "A function that closes files",
+                        "An inner function that remembers variables from its enclosing scope",
+                        "A way to end a loop",
+                        "A class with no methods",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "A closure is an inner function that captures (\"closes over\") variables from the scope it was defined in, keeping them alive after the outer function returns.",
+                },
+                {
+                    "prompt_md": "Why does `make_counter`'s inner function need `nonlocal count`?",
+                    "options": [
+                        "To create a new local `count`",
+                        "To rebind the *enclosing* `count` instead of shadowing it with a new local",
+                        "To make `count` global",
+                        "It's optional decoration",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "Assigning to `count` would otherwise create a new local variable. `nonlocal` tells Python to rebind the `count` in the enclosing scope, so the counter actually increments.",
+                },
+            ],
             "missions": [
                 {
                     "slug": "args-kwargs-basics",
@@ -337,6 +488,53 @@ rebind that enclosing variable rather than shadowing it. Each call to
             "title": "OOP Basics",
             "description": "Classes, inheritance, and dunder methods.",
             "badge": {"id": "object-whisperer", "name": "Object Whisperer", "icon": "🏛️"},
+            "quiz": [
+                {
+                    "prompt_md": "What is `self` in a method definition?",
+                    "options": [
+                        "The class itself",
+                        "The instance the method is called on",
+                        "A reserved keyword",
+                        "The parent class",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "`self` is the instance — the specific object the method was called on. Its attributes (`self.name`) hold that object's data.",
+                },
+                {
+                    "prompt_md": "When does `__init__` run?",
+                    "options": [
+                        "Every time any method is called",
+                        "When a new instance is constructed",
+                        "When the class is defined",
+                        "When the object is deleted",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "`__init__` is the initializer: it runs once when you construct an instance (e.g. `Dog(\"Rex\")`), setting up its attributes.",
+                },
+                {
+                    "prompt_md": "Which dunder method controls what `==` does between two objects?",
+                    "options": ["`__cmp__`", "`__eq__`", "`__equals__`", "`__is__`"],
+                    "correct": 1,
+                    "explanation_md": "`__eq__(self, other)` defines equality, letting two distinct objects with the same data compare `==`.",
+                },
+                {
+                    "prompt_md": "Which dunder lets `len(obj)` work on your object?",
+                    "options": ["`__size__`", "`__len__`", "`__count__`", "`__length__`"],
+                    "correct": 1,
+                    "explanation_md": "`__len__(self)` is what `len()` calls. Similarly `__add__` powers `+` and `__repr__` powers `repr()`.",
+                },
+                {
+                    "prompt_md": "What does implementing `__repr__` give you?",
+                    "options": [
+                        "Faster attribute access",
+                        "Control over the string shown by `repr(obj)`",
+                        "Automatic equality",
+                        "Immutability",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "`__repr__` controls the unambiguous string representation (ideally constructor-style, like `Vector(1, 2)`) shown by `repr()` and in the debugger.",
+                },
+            ],
             "missions": [
                 {
                     "slug": "oop-rectangle",
@@ -470,6 +668,58 @@ constructor-style string. Together they make `Vector` behave like a built-in.
             "title": "Dataclasses",
             "description": "Let @dataclass write __init__, __repr__ and __eq__ for you.",
             "badge": {"id": "dataclass-drafter", "name": "Dataclass Drafter", "icon": "📐"},
+            "quiz": [
+                {
+                    "prompt_md": "Which three methods does `@dataclass` generate for you?",
+                    "options": [
+                        "`__init__`, `__repr__`, `__eq__`",
+                        "`__new__`, `__del__`, `__call__`",
+                        "`__str__`, `__hash__`, `__len__`",
+                        "`__enter__`, `__exit__`, `__iter__`",
+                    ],
+                    "correct": 0,
+                    "explanation_md": "From the annotated fields, `@dataclass` synthesises a constructor, a readable `__repr__`, and a value-based `__eq__` — the boilerplate you wrote by hand for `Vector`.",
+                },
+                {
+                    "prompt_md": "How does a dataclass know what fields to create?",
+                    "options": [
+                        "From methods you define",
+                        "From the class-level **annotated** attributes (e.g. `x: int`)",
+                        "From the `__init__` you write",
+                        "From a `fields = [...]` list",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "Each annotated class variable (`x: int`) becomes a field. That single line is all `@dataclass` needs to build the constructor and dunders.",
+                },
+                {
+                    "prompt_md": "How do you give a dataclass field a default value?",
+                    "options": [
+                        "`balance := 0.0`",
+                        "`balance: float = 0.0`",
+                        "`default balance = 0.0`",
+                        "`balance = float(0.0)`",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "`balance: float = 0.0` makes that field optional, exactly like a normal parameter default.",
+                },
+                {
+                    "prompt_md": "Can a dataclass have your own custom methods too?",
+                    "options": [
+                        "No — only fields are allowed",
+                        "Yes — add methods alongside the fields",
+                        "Only static methods",
+                        "Only if you drop the decorator",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "Dataclasses aren't just dumb records — you can add real behavior (like a `deposit` method) right next to the generated dunders.",
+                },
+                {
+                    "prompt_md": "What does `repr(Point(1, 2))` produce for a dataclass `Point` with fields `x` and `y`?",
+                    "options": ["`\"Point(1, 2)\"`", "`\"Point(x=1, y=2)\"`", "`\"<Point>\"`", "`\"(1, 2)\"`"],
+                    "correct": 1,
+                    "explanation_md": "The generated `__repr__` names each field: `Point(x=1, y=2)`.",
+                },
+            ],
             "missions": [
                 {
                     "slug": "dataclasses-basics",
@@ -604,6 +854,58 @@ you can hang real behavior like `deposit` right alongside the generated dunders.
             "title": "File I/O & Context Managers",
             "description": "Reading, writing, and the `with` statement.",
             "badge": {"id": "file-wrangler", "name": "File Wrangler", "icon": "📁"},
+            "quiz": [
+                {
+                    "prompt_md": "What is the main guarantee of the `with open(...) as f:` statement?",
+                    "options": [
+                        "The file loads faster",
+                        "The file is closed automatically, even if an exception is raised",
+                        "The file can't be modified",
+                        "It reads the whole file into memory",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "`with` guarantees cleanup: the file handle is closed when the block exits, whether normally or via an exception. Never `open()` without it in real code.",
+                },
+                {
+                    "prompt_md": "Which mode string opens a file for **writing** (truncating existing content)?",
+                    "options": ["`\"r\"`", "`\"w\"`", "`\"a\"`", "`\"x\"`"],
+                    "correct": 1,
+                    "explanation_md": "`\"w\"` opens for writing and truncates. `\"r\"` reads, `\"a\"` appends to the end.",
+                },
+                {
+                    "prompt_md": "What do you get when you iterate directly over a file object, as in `for line in f:`?",
+                    "options": [
+                        "One character at a time",
+                        "One line at a time",
+                        "The whole file as a string",
+                        "A list of words",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "File objects are iterators of **lines**, so `for line in f:` streams the file line by line without loading it all into memory.",
+                },
+                {
+                    "prompt_md": "Lines read from a file keep their trailing `\\n`. How do you strip just that newline?",
+                    "options": [
+                        "`line.strip()`",
+                        "`line.rstrip(\"\\n\")`",
+                        "`line.replace(line, \"\")`",
+                        "`line[:-2]`",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "`rstrip(\"\\n\")` removes only the trailing newline. Plain `strip()` would also remove meaningful leading/trailing spaces.",
+                },
+                {
+                    "prompt_md": "What does `f.read()` return versus iterating the file?",
+                    "options": [
+                        "The same thing",
+                        "`read()` slurps the entire file into one string; iterating streams line by line",
+                        "`read()` returns a list of lines",
+                        "`read()` only reads one line",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "`f.read()` loads the whole file into a single string (handy for small files), while iterating processes it lazily, one line at a time.",
+                },
+            ],
             "missions": [
                 {
                     "slug": "file-io-basics",
@@ -738,6 +1040,53 @@ short-circuits cleanly to `(0, 0)`.
             "title": "Modules & the Standard Library",
             "description": "import, packages, venvs, and batteries included.",
             "badge": {"id": "module-navigator", "name": "Module Navigator", "icon": "🧭"},
+            "quiz": [
+                {
+                    "prompt_md": "What distinguishes a **package** from a plain module?",
+                    "options": [
+                        "A package is compiled",
+                        "A package is a directory of modules (traditionally with an `__init__.py`)",
+                        "A package can't be imported",
+                        "There's no difference",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "A module is a single `.py` file; a package is a directory grouping modules together, traditionally marked by an `__init__.py`.",
+                },
+                {
+                    "prompt_md": "After `from math import hypot`, how do you call it?",
+                    "options": ["`math.hypot(3, 4)`", "`hypot(3, 4)`", "`import.hypot(3, 4)`", "`math.import(hypot)`"],
+                    "correct": 1,
+                    "explanation_md": "`from math import hypot` binds `hypot` directly into your namespace, so you call it bare as `hypot(3, 4)` (no `math.` prefix).",
+                },
+                {
+                    "prompt_md": "Why should each project run inside a **virtual environment**?",
+                    "options": [
+                        "It makes Python faster",
+                        "So its dependencies stay isolated and don't pollute the system install",
+                        "It's required to use `import`",
+                        "It encrypts your code",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "A venv (`python -m venv .venv`) keeps each project's packages separate, so different projects can't break each other's dependency versions.",
+                },
+                {
+                    "prompt_md": "Why prefer `math.pi` over typing `3.14159` yourself?",
+                    "options": [
+                        "It's shorter",
+                        "`math.pi` is far more precise than any literal you'd type",
+                        "Literals aren't allowed",
+                        "It changes value over time",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "`math.pi` carries full floating-point precision — reach for the standard library rather than reinventing (or under-specifying) it.",
+                },
+                {
+                    "prompt_md": "Which of these is part of Python's \"batteries included\" standard library?",
+                    "options": ["`numpy`", "`itertools`", "`requests`", "`pandas`"],
+                    "correct": 1,
+                    "explanation_md": "`itertools` (like `math`, `datetime`, `functools`, `collections`, `pathlib`) ships with Python. The others are third-party packages you'd `pip install`.",
+                },
+            ],
             "missions": [
                 {
                     "slug": "modules-math",
@@ -864,6 +1213,63 @@ the signed day count — leap years and month lengths handled for you.
             "title": "The collections Module",
             "description": "Counter, defaultdict, and sorting with a key.",
             "badge": {"id": "collections-conjurer", "name": "Collections Conjurer", "icon": "🎒"},
+            "quiz": [
+                {
+                    "prompt_md": "What does `Counter(\"mississippi\")` give you?",
+                    "options": [
+                        "A sorted string",
+                        "A count of each character, e.g. `{'i': 4, 's': 4, 'p': 2, 'm': 1}`",
+                        "The length, `11`",
+                        "A set of unique letters",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "`Counter` tallies occurrences of each element — it's the hand-rolled counting loop from Tier 1, built in.",
+                },
+                {
+                    "prompt_md": "What does `Counter(words).most_common(3)` return?",
+                    "options": [
+                        "The 3 rarest words",
+                        "The top 3 `(word, count)` pairs by frequency",
+                        "3 random words",
+                        "The first 3 words",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "`most_common(n)` returns the `n` highest-frequency items as `(element, count)` pairs, ordered most-frequent first.",
+                },
+                {
+                    "prompt_md": "What problem does `defaultdict(list)` solve?",
+                    "options": [
+                        "It sorts keys automatically",
+                        "Missing keys auto-create an empty list, so you can `append` without a guard",
+                        "It prevents duplicate keys",
+                        "It makes the dict immutable",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "`defaultdict(list)` supplies an empty list the first time a key is touched, eliminating the `if key not in groups` boilerplate before appending.",
+                },
+                {
+                    "prompt_md": "What does the `key` argument to `sorted` do?",
+                    "options": [
+                        "Picks which dict key to sort",
+                        "Maps each item to the value it should be sorted *by*",
+                        "Encrypts the sort",
+                        "Reverses the order",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "`sorted(xs, key=f)` sorts by `f(item)` for each item — e.g. `key=len` sorts by length without changing the items themselves.",
+                },
+                {
+                    "prompt_md": "What does `sorted(words, key=lambda w: (-len(w), w))` do?",
+                    "options": [
+                        "Sorts alphabetically only",
+                        "Sorts by length **descending**, breaking ties alphabetically",
+                        "Sorts by length ascending",
+                        "Reverses the list",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "A tuple key sorts by its first element then the second. `-len(w)` flips length to descending; `w` breaks ties alphabetically — all in one stable pass.",
+                },
+            ],
             "missions": [
                 {
                     "slug": "collections-counter",
@@ -976,6 +1382,63 @@ all in one stable pass.
             "title": "Intro to pytest",
             "description": "Assertions, test functions, and pytest.raises.",
             "badge": {"id": "test-tactician", "name": "Test Tactician", "icon": "🧪"},
+            "quiz": [
+                {
+                    "prompt_md": "How does pytest decide which functions are tests?",
+                    "options": [
+                        "Functions decorated with `@test`",
+                        "Functions whose names start with `test_`",
+                        "Every function in the file",
+                        "Functions ending in `_test`",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "pytest auto-discovers functions named `test_*` and runs them — no registration or decorator required.",
+                },
+                {
+                    "prompt_md": "How does pytest check conditions inside a test?",
+                    "options": [
+                        "`self.assertEqual(...)`",
+                        "Plain `assert` statements",
+                        "`expect(...)`",
+                        "`check(...)`",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "pytest works with Python's built-in `assert` and rewrites it to show a helpful diff on failure — no special assertion methods needed.",
+                },
+                {
+                    "prompt_md": "What is `with pytest.raises(ValueError):` used for?",
+                    "options": [
+                        "To ignore a ValueError",
+                        "To assert that the enclosed block **raises** that exception",
+                        "To raise a ValueError manually",
+                        "To catch and silence all errors",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "`pytest.raises` asserts the block raises the given exception — the standard way to test error paths. The test *fails* if no such exception is raised.",
+                },
+                {
+                    "prompt_md": "Why must `validate_age` check `isinstance(age, bool)` *before* the `int` check?",
+                    "options": [
+                        "Booleans are faster to check",
+                        "Because `isinstance(True, int)` is `True`, so `True` would sneak through as a valid age",
+                        "It's just a style preference",
+                        "To catch `None`",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "`bool` is a subclass of `int`, so `True` passes an `isinstance(age, int)` test. You must rule out `bool` explicitly first.",
+                },
+                {
+                    "prompt_md": "What makes code **designed to be tested**?",
+                    "options": [
+                        "It has no functions",
+                        "It validates inputs and raises precise, specific exceptions",
+                        "It never raises anything",
+                        "It uses global variables",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "Testable code has clear, predictable behavior: it validates inputs and signals failure with precise exceptions you can assert on with `pytest.raises`.",
+                },
+            ],
             "missions": [
                 {
                     "slug": "pytest-basics",

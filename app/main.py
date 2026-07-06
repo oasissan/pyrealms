@@ -6,7 +6,7 @@ from fastapi.staticfiles import StaticFiles
 
 from .auth import BasicAuthMiddleware
 from .database import Base, SessionLocal, engine
-from .routers import actions, pages, chatbot
+from .routers import actions, pages, chatbot, quiz
 from .seed import seed
 
 
@@ -37,4 +37,5 @@ app.mount(
 app.include_router(pages.router)
 app.include_router(actions.router)
 app.include_router(chatbot.router)
+app.include_router(quiz.router)
 

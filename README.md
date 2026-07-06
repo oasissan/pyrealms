@@ -16,6 +16,16 @@ meant to double as advanced-Python practice for anyone reading it.
 
 Design spec: [`docs/superpowers/specs/2026-07-05-python-zero-to-hero-design.md`](docs/superpowers/specs/2026-07-05-python-zero-to-hero-design.md)
 
+## Screenshots
+
+| The World Map | Quest + Knowledge Check |
+|---|---|
+| ![The World Map — tiered realms with XP, streak, and progress](docs/screenshots/world-map.png) | ![Quest page with a knowledge-check quiz](docs/screenshots/quest-quiz.png) |
+
+| Mission — auto-graded challenge | Gemini Copilot |
+|---|---|
+| ![Mission page: lesson, code editor, and a passing hidden-test result](docs/screenshots/mission-pass.png) | ![Gemini Copilot side panel answering questions about the current mission](docs/screenshots/chatbot.png) |
+
 ## Quick start
 
 ```bash

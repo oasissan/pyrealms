@@ -19,6 +19,58 @@ TIER = {
             "title": "Recursion & Big-O",
             "description": "Base cases, recursive cases, and reasoning about cost.",
             "badge": {"id": "recursion-runner", "name": "Recursion Runner", "icon": "🌀"},
+            "quiz": [
+                {
+                    "prompt_md": "What is the **base case** of a recursive function?",
+                    "options": [
+                        "The line that calls the function again",
+                        "The condition that returns without recursing, stopping the recursion",
+                        "The first argument",
+                        "The largest input",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "The base case returns directly without another recursive call — it's what stops the recursion and prevents a stack overflow.",
+                },
+                {
+                    "prompt_md": "What happens if a recursive function never reaches its base case?",
+                    "options": [
+                        "It returns None",
+                        "It recurses until the call stack overflows (RecursionError)",
+                        "It runs once and stops",
+                        "Python skips the recursion",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "Each call must move *toward* the base case. If it never does, calls pile up until Python raises `RecursionError` (blows the stack).",
+                },
+                {
+                    "prompt_md": "What does **Big-O** notation describe?",
+                    "options": [
+                        "The exact runtime in seconds",
+                        "How the work grows as the input size grows",
+                        "The number of lines of code",
+                        "Memory address size",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "Big-O characterizes growth: how the number of operations (or memory) scales with input size, ignoring constants and hardware.",
+                },
+                {
+                    "prompt_md": "The `factorial` example makes n calls, each O(1). What's its time complexity?",
+                    "options": ["O(1)", "O(n)", "O(n²)", "O(log n)"],
+                    "correct": 1,
+                    "explanation_md": "n calls × O(1) work each = O(n). You analyze a recursion by counting the calls and the work per call.",
+                },
+                {
+                    "prompt_md": "Why is `recursive_sum(nums[1:])` (with slicing) more costly than a pointer-based helper?",
+                    "options": [
+                        "Slicing is a syntax error",
+                        "Each `nums[1:]` **copies** the rest of the list, adding O(n) work per call",
+                        "It skips elements",
+                        "Pointers are always slower",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "`nums[1:]` allocates a new list each call, pushing the cost toward O(n²). Passing an index instead avoids the copies — naming that trade-off is the Big-O reasoning interviewers want.",
+                },
+            ],
             "missions": [
                 {
                     "slug": "recursion-sum",
@@ -138,6 +190,63 @@ itself recursive (arbitrary depth), where a fixed number of loops can't reach.
             "title": "Two Pointers",
             "description": "Walk a sequence from both ends — or at two speeds.",
             "badge": {"id": "two-pointer-tactician", "name": "Two-Pointer Tactician", "icon": "👉"},
+            "quiz": [
+                {
+                    "prompt_md": "What does the classic two-pointer pattern typically do?",
+                    "options": [
+                        "Uses two lists at once",
+                        "Moves two indices through a sequence, often from opposite ends toward the middle",
+                        "Calls a function twice",
+                        "Sorts the list",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "Two pointers walk a sequence with two indices — commonly `left` and `right` converging from the ends — coordinating their movement to solve the problem in one pass.",
+                },
+                {
+                    "prompt_md": "What complexity improvement does two pointers often achieve?",
+                    "options": [
+                        "O(n²) → O(n) time with O(1) extra space",
+                        "O(n) → O(log n)",
+                        "O(n) → O(n²)",
+                        "No change",
+                    ],
+                    "correct": 0,
+                    "explanation_md": "It frequently turns an O(n²) brute-force scan into a single O(n) pass using only O(1) extra space.",
+                },
+                {
+                    "prompt_md": "Why does `reverse_in_place` beat `nums[::-1]` on memory?",
+                    "options": [
+                        "It doesn't — they're identical",
+                        "Swapping in place uses O(1) extra space; `[::-1]` allocates a whole new list",
+                        "`[::-1]` is a syntax error",
+                        "Slicing is O(n²)",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "The two-pointer swap mutates the original list with O(1) extra space, whereas `nums[::-1]` builds and returns an entirely new list (O(n) space).",
+                },
+                {
+                    "prompt_md": "In `move_zeroes`, what role does the slow `insert` pointer play?",
+                    "options": [
+                        "It counts zeros",
+                        "It marks where the next non-zero element belongs",
+                        "It scans ahead for zeros",
+                        "It reverses the list",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "The slow pointer `insert` tracks the next slot for a non-zero value while the fast pointer scans ahead — the two-speed variant of the pattern.",
+                },
+                {
+                    "prompt_md": "In a converging-pointer loop, what condition keeps it running?",
+                    "options": [
+                        "`left == right`",
+                        "`left < right`",
+                        "`left > right`",
+                        "`left != 0`",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "`while left < right:` processes pairs until the pointers meet (or cross) in the middle; once they meet there's nothing left to pair.",
+                },
+            ],
             "missions": [
                 {
                     "slug": "two-pointers-reverse",
@@ -259,6 +368,63 @@ O(n) pass, O(1) space, order preserved.
             "title": "Sliding Window",
             "description": "Reuse work across overlapping ranges instead of recomputing.",
             "badge": {"id": "window-watcher", "name": "Window Watcher", "icon": "🪟"},
+            "quiz": [
+                {
+                    "prompt_md": "What is the core idea of a sliding window?",
+                    "options": [
+                        "Sort the data first",
+                        "Keep a running summary of a range and update it incrementally as the range slides",
+                        "Recompute each range from scratch",
+                        "Use recursion",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "A sliding window maintains a summary (like a running sum) and updates it as the window moves, avoiding recomputation.",
+                },
+                {
+                    "prompt_md": "For a fixed-size window, what does `window += xs[i] - xs[i - k]` do?",
+                    "options": [
+                        "Resets the window",
+                        "Adds the entering element and subtracts the leaving one",
+                        "Doubles the window",
+                        "Sorts the window",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "Each slide adds the newly-included element (`xs[i]`) and removes the one that fell out (`xs[i-k]`) — an O(1) update per step.",
+                },
+                {
+                    "prompt_md": "What's the complexity gain of sliding vs. recomputing each window sum?",
+                    "options": [
+                        "O(n·k) → O(n)",
+                        "O(n) → O(n·k)",
+                        "O(n) → O(log n)",
+                        "No change",
+                    ],
+                    "correct": 0,
+                    "explanation_md": "Resumming each window is O(n·k); the incremental rolling update makes it O(n) overall.",
+                },
+                {
+                    "prompt_md": "How do **variable-size** windows differ from fixed-size ones?",
+                    "options": [
+                        "They don't move",
+                        "They grow and shrink two pointers to maintain a condition",
+                        "They require sorting",
+                        "They use recursion",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "Variable windows expand and contract (moving `start`/`end`) to keep some property true — e.g. \"no repeating characters\" in `longest_unique`.",
+                },
+                {
+                    "prompt_md": "In `longest_unique`, why store each character's **last-seen index** in a dict?",
+                    "options": [
+                        "To count characters",
+                        "So on a repeat you can jump `start` just past the earlier duplicate in O(1)",
+                        "To sort the string",
+                        "To reverse the window",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "The last-seen index lets you move the window's `start` immediately past a repeated character, keeping every step O(1) and the whole scan O(n).",
+                },
+            ],
             "missions": [
                 {
                     "slug": "sliding-window-sum",
@@ -379,6 +545,58 @@ keeps every step O(1), so the whole scan is O(n).
             "title": "Hash-Map Patterns",
             "description": "Trade memory for O(1) lookups — the interview workhorse.",
             "badge": {"id": "hash-hunter", "name": "Hash Hunter", "icon": "#️⃣"},
+            "quiz": [
+                {
+                    "prompt_md": "What is the average-case lookup cost of a Python `dict`?",
+                    "options": ["O(n)", "O(1)", "O(log n)", "O(n²)"],
+                    "correct": 1,
+                    "explanation_md": "Dicts (hash maps) offer O(1) average lookup — the property that collapses many nested-loop problems to a single pass.",
+                },
+                {
+                    "prompt_md": "In `two_sum`, what does the `seen` dict store as you scan?",
+                    "options": [
+                        "Every possible pair",
+                        "Each value's index, so you can look up a needed complement in O(1)",
+                        "The sorted list",
+                        "The target repeatedly",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "`seen` maps value → index. For each number you check whether its complement (`target - n`) is already in `seen` — an O(1) lookup.",
+                },
+                {
+                    "prompt_md": "What complexity does the hash-map approach turn the brute-force two-sum into?",
+                    "options": [
+                        "O(n²) → O(n) time, O(n) space",
+                        "O(n) → O(n²)",
+                        "O(n log n) → O(1)",
+                        "No change",
+                    ],
+                    "correct": 0,
+                    "explanation_md": "The dict trades memory for speed: O(n) time and O(n) space instead of the O(n²) \"check every pair\" double loop.",
+                },
+                {
+                    "prompt_md": "In `two_sum`, why store each value's index *after* checking for its complement?",
+                    "options": [
+                        "For speed",
+                        "To guarantee the returned indices satisfy `i < j` (and avoid pairing a value with itself)",
+                        "It's arbitrary",
+                        "To sort the result",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "Checking before inserting means the complement you find was seen at an *earlier* index, so `i < j` holds and a single element can't match itself.",
+                },
+                {
+                    "prompt_md": "In `group_anagrams`, why do sorted letters make a good grouping key?",
+                    "options": [
+                        "Sorting is fast",
+                        "All anagrams of a word share the exact same sorted-letter string",
+                        "It removes duplicates",
+                        "It reverses the word",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "Anagrams contain the same letters, so `\"\".join(sorted(word))` produces an identical canonical key for every word in a group.",
+                },
+            ],
             "missions": [
                 {
                     "slug": "hashmap-two-sum",
@@ -502,6 +720,58 @@ dict move.
             "title": "Sorting & Searching",
             "description": "Binary search and interval merging on sorted data.",
             "badge": {"id": "binary-boss", "name": "Binary Boss", "icon": "🔍"},
+            "quiz": [
+                {
+                    "prompt_md": "What precondition does binary search require?",
+                    "options": [
+                        "The data must be sorted",
+                        "The data must be unique",
+                        "The data must be a set",
+                        "The data must be small",
+                    ],
+                    "correct": 0,
+                    "explanation_md": "Binary search only works on **sorted** data — that's what lets it discard half the range based on the middle element.",
+                },
+                {
+                    "prompt_md": "What is the time complexity of binary search?",
+                    "options": ["O(n)", "O(log n)", "O(n log n)", "O(1)"],
+                    "correct": 1,
+                    "explanation_md": "Each step halves the search range, so it's O(log n) — about 20 steps for a million elements.",
+                },
+                {
+                    "prompt_md": "Why use `lo <= hi` (not `lo < hi`) as the loop condition?",
+                    "options": [
+                        "Style preference",
+                        "So the final single-element range (`lo == hi`) still gets checked",
+                        "To make it O(n)",
+                        "To avoid sorting",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "When `lo == hi` there's still one element to examine. Using `<` would skip it and miss targets at the boundary.",
+                },
+                {
+                    "prompt_md": "Why update with `mid + 1` / `mid - 1` rather than just `mid`?",
+                    "options": [
+                        "To sort faster",
+                        "To guarantee the range shrinks and avoid an infinite loop",
+                        "To skip two elements",
+                        "It's optional",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "You've already checked `mid`, so excluding it (`mid ± 1`) both avoids re-checking and ensures the window strictly shrinks — otherwise the loop can spin forever.",
+                },
+                {
+                    "prompt_md": "In `merge_intervals`, why sort the intervals by start first?",
+                    "options": [
+                        "To make output pretty",
+                        "So any overlap must be with the most recently merged interval, enabling a single pass",
+                        "Sorting is required by Python",
+                        "To remove duplicates",
+                    ],
+                    "correct": 1,
+                    "explanation_md": "Sorting by start guarantees overlaps are always adjacent to the last merged interval, so one O(n) pass after the O(n log n) sort suffices.",
+                },
+            ],
             "missions": [
                 {
                     "slug": "binary-search",

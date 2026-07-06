@@ -1,3 +1,4 @@
+import json
 from datetime import date, datetime
 
 from sqlalchemy import (
@@ -48,6 +49,9 @@ class Quest(Base):
     challenges: Mapped[list["Challenge"]] = relationship(
         back_populates="quest", order_by="Challenge.order"
     )
+    quiz_questions: Mapped[list["QuizQuestion"]] = relationship(
+        back_populates="quest", order_by="QuizQuestion.order"
+    )
 
 
 class Challenge(Base):
@@ -90,6 +94,45 @@ class Submission(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     challenge: Mapped[Challenge] = relationship(back_populates="submissions")
+
+
+class QuizQuestion(Base):
+    """A multiple-choice comprehension check attached to a quest. Seeded from
+    the ``quiz`` list on each quest's content dict (see app/content)."""
+
+    __tablename__ = "quiz_questions"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    quest_id: Mapped[int] = mapped_column(ForeignKey("quests.id"))
+    order: Mapped[int] = mapped_column(Integer)
+    prompt_md: Mapped[str] = mapped_column(Text)
+    options_json: Mapped[str] = mapped_column(Text)  # JSON array of option strings
+    correct_index: Mapped[int] = mapped_column(Integer)
+    explanation_md: Mapped[str] = mapped_column(Text, default="")
+    xp_reward: Mapped[int] = mapped_column(Integer, default=10)
+
+    quest: Mapped[Quest] = relationship(back_populates="quiz_questions")
+    answers: Mapped[list["QuizAnswer"]] = relationship(back_populates="question")
+
+    @property
+    def options(self) -> list[str]:
+        return json.loads(self.options_json)
+
+
+class QuizAnswer(Base):
+    """Append-only log of every MCQ answer. 'Answered correctly' is derived
+    from this (any row with correct=True) — never a mutable flag on the
+    question, in keeping with the project's ledger convention."""
+
+    __tablename__ = "quiz_answers"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    question_id: Mapped[int] = mapped_column(ForeignKey("quiz_questions.id"))
+    chosen_index: Mapped[int] = mapped_column(Integer)
+    correct: Mapped[bool] = mapped_column(Boolean)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+    question: Mapped[QuizQuestion] = relationship(back_populates="answers")
 
 
 class SolutionReveal(Base):

@@ -5,13 +5,48 @@ import json
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from .content import ALL_TIERS, META_ACHIEVEMENTS
-from .models import AchievementRule, Challenge, Quest, Settings, Tier
+from .content import ALL_TIERS, META_ACHIEVEMENTS, iter_quiz_questions
+from .models import (
+    AchievementRule,
+    Challenge,
+    Quest,
+    QuizQuestion,
+    Settings,
+    Tier,
+)
+
+
+def seed_quizzes(db: Session) -> None:
+    """Seed MCQ questions from the quest content dicts. Idempotent and
+    independent of the tier/quest seed, gated on an empty quiz table — so an
+    already-seeded install picks up quizzes on next startup without a wipe
+    (and without losing learner progress)."""
+    if db.execute(select(QuizQuestion.id)).first() is not None:
+        return  # already seeded
+
+    quest_ids = {
+        slug: qid
+        for slug, qid in db.execute(select(Quest.slug, Quest.id)).all()
+    }
+    for quest, order, question in iter_quiz_questions():
+        db.add(
+            QuizQuestion(
+                quest_id=quest_ids[quest["slug"]],
+                order=order,
+                prompt_md=question["prompt_md"],
+                options_json=json.dumps(question["options"]),
+                correct_index=question["correct"],
+                explanation_md=question["explanation_md"],
+                xp_reward=question.get("xp", 10),
+            )
+        )
+    db.commit()
 
 
 def seed(db: Session) -> None:
     if db.execute(select(Tier.id)).first() is not None:
-        return  # already seeded
+        seed_quizzes(db)  # backfill quizzes for pre-existing installs
+        return  # tiers/quests already seeded
 
     for tier_data in ALL_TIERS:
         tier = Tier(
@@ -93,3 +128,4 @@ def seed(db: Session) -> None:
         db.add(Settings(show_gamification=True))
 
     db.commit()
+    seed_quizzes(db)  # quests now exist; attach their quizzes

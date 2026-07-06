@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from ..database import get_db
 from ..models import Challenge, Settings
-from ..services.gemini_web import GeminiWebClient
+from ..services.gemini_web import GeminiAuthError, GeminiWebClient
 
 router = APIRouter(prefix="/api/chatbot")
 
@@ -111,27 +111,33 @@ def send_message(payload: MessagePayload, db: Session = Depends(get_db)):
             detail="Gemini Copilot is not configured. Please go to settings and add your session cookies.",
         )
         
-    client = GeminiWebClient(
-        secure_1psid=settings.gemini_session_cookie,
-        secure_1psidts=settings.gemini_cookie_ts,
-    )
-    
     try:
-        reply_text, conversation_id, parent_message_id = client.send_message(
-            prompt=payload.message,
-            conversation_id=payload.conversation_id,
-            parent_message_id=payload.parent_message_id,
-        )
-        
-        reply_html = render_md(reply_text)
-        
+        with GeminiWebClient(
+            secure_1psid=settings.gemini_session_cookie,
+            secure_1psidts=settings.gemini_cookie_ts,
+        ) as client:
+            reply_text, conversation_id, parent_message_id = client.send_message(
+                prompt=payload.message,
+                conversation_id=payload.conversation_id,
+                parent_message_id=payload.parent_message_id,
+            )
+
+            # Google rotates __Secure-1PSIDTS; persist the fresh value so the
+            # stored snapshot doesn't go stale and start returning 401s.
+            rotated = client.current_psidts
+            if rotated and rotated != settings.gemini_cookie_ts:
+                settings.gemini_cookie_ts = rotated
+                db.commit()
+
         return {
             "success": True,
             "reply": reply_text,
-            "html": reply_html,
+            "html": render_md(reply_text),
             "conversation_id": conversation_id,
             "parent_message_id": parent_message_id,
         }
+    except GeminiAuthError as e:
+        raise HTTPException(status_code=401, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

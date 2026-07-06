@@ -1,0 +1,19 @@
+{# Answer-route response: the re-rendered question, plus out-of-band HUD/toast
+   updates so the XP bar ticks and a toast fires on a first-try correct. #}
+{% include "partials/quiz_question.html" %}
+
+{# Out-of-band HUD refresh so the XP bar / level update instantly #}
+{% with oob = True %}{% include "partials/hud.html" %}{% endwith %}
+
+{% if show_gamification and xp_result and xp_result.awarded %}
+<div id="toasts" hx-swap-oob="beforeend">
+  <div class="toast xp-toast" x-data x-init="setTimeout(() => $el.remove(), 4000)">
+    ⚡ +{{ xp_result.delta }} XP
+  </div>
+  {% if xp_result.leveled_up %}
+  <div class="toast level-toast" x-data x-init="confetti(); setTimeout(() => $el.remove(), 6000)">
+    🎉 LEVEL UP! You are now level {{ xp_result.level_after }}
+  </div>
+  {% endif %}
+</div>
+{% endif %}
