@@ -1,8 +1,8 @@
 import re
 
-from . import tier1, tier2, tier3, tier4
+from . import tier1, tier2, tier3, tier4, tier5
 
-ALL_TIERS = [tier1.TIER, tier2.TIER, tier3.TIER, tier4.TIER]
+ALL_TIERS = [tier1.TIER, tier2.TIER, tier3.TIER, tier4.TIER, tier5.TIER]
 
 _CODE_FENCE_RE = re.compile(r"```(?:python)?\n(.*?)```", re.DOTALL)
 
