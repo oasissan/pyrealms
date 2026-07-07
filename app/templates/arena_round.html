@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}Arena — Round {{ round.order }} — PyRealms{% endblock %}
+{% block content %}
+<p><a href="/arena">← Leave the Arena</a></p>
+<div id="arena-round">
+  {% include "partials/arena_round_body.html" %}
+</div>
+{% endblock %}

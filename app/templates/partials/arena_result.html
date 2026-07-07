@@ -1,0 +1,33 @@
+{% if just_correct is defined %}
+<div class="arena-flash {{ 'ok' if just_correct else 'no' }}">
+  {{ "✓ Correct" if just_correct else "✗ Not this time" }} — that was the last round.
+</div>
+{% endif %}
+
+<div class="arena-result-card">
+  <h2>🎤 Interview complete</h2>
+  <p class="arena-score"><strong>{{ session.score }}</strong> / {{ session.total }} correct
+    <span class="muted">({{ session.difficulty|capitalize }})</span></p>
+
+  {% if personal_best is not none %}
+    {% if session.score >= personal_best %}
+    <p class="personal-best">🏆 New personal best!</p>
+    {% else %}
+    <p class="muted">Personal best: {{ personal_best }}. Keep going!</p>
+    {% endif %}
+  {% endif %}
+
+  <ol class="arena-breakdown">
+    {% for r in session.rounds %}
+    <li class="{{ 'ok' if r.correct else 'no' }}">
+      Round {{ r.order }} · {{ "Concept" if r.kind == "mcq" else "Coding" }} —
+      {{ "✓ correct" if r.correct else "✗ missed" }}
+    </li>
+    {% endfor %}
+  </ol>
+
+  <div class="submit-row">
+    <a href="/arena" class="primary-btn">↻ Run another</a>
+    <a href="/" class="muted">← World Map</a>
+  </div>
+</div>

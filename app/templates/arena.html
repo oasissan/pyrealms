@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Mock Interview Arena — PyRealms{% endblock %}
+{% block content %}
+<p><a href="/">← World Map</a></p>
+<h1>🎤 Mock Interview Arena</h1>
+<p class="muted">
+  A timed, randomized gauntlet drawn from the whole curriculum — concept
+  questions and coding challenges under the clock. No hints, one shot per
+  round. Beat your own best score.
+</p>
+
+{% if personal_best is not none %}
+<p class="personal-best">🏆 Personal best: <strong>{{ personal_best }}</strong> correct in a single run.</p>
+{% endif %}
+
+<form action="/arena/start" method="post" class="arena-config">
+  <label>
+    Difficulty
+    <select name="difficulty">
+      {% for d in difficulties %}
+      <option value="{{ d }}" {{ "selected" if d == "expert" }}>{{ d|capitalize }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <label>
+    Questions
+    <select name="num_questions">
+      {% for n in [3, 5, 8, 10] %}
+      <option value="{{ n }}" {{ "selected" if n == 5 }}>{{ n }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <button type="submit" class="primary-btn">⚔️ Enter the Arena</button>
+</form>
+<p class="muted arena-hint">Standard draws from Realms 2–3; Expert from Realms 4–6.</p>
+
+{% if recent %}
+<section class="arena-history">
+  <h2>Recent runs</h2>
+  <table class="arena-table">
+    <thead><tr><th>When</th><th>Difficulty</th><th>Score</th></tr></thead>
+    <tbody>
+      {% for s in recent %}
+      <tr>
+        <td><a href="/arena/results/{{ s.id }}">{{ s.created_at.strftime("%Y-%m-%d %H:%M") }}</a></td>
+        <td>{{ s.difficulty|capitalize }}</td>
+        <td>{{ s.score }}/{{ s.total }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endif %}
+{% endblock %}

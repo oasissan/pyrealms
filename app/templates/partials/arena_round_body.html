@@ -1,0 +1,48 @@
+{% if just_correct is defined %}
+<div class="arena-flash {{ 'ok' if just_correct else 'no' }}">
+  {{ "✓ Correct" if just_correct else "✗ Not this time" }} — on to the next.
+</div>
+{% endif %}
+
+<div class="arena-progress">
+  <span class="muted">{{ session.difficulty|capitalize }} · Question {{ round.order }} of {{ session.total }}</span>
+  <div class="xp-bar wide"><div class="xp-fill" style="width: {{ (100 * (round.order - 1) / session.total)|round }}%"></div></div>
+</div>
+
+<div class="arena-round-card"
+     x-data="{ left: {{ seconds }} }"
+     x-init="const t = setInterval(() => { left--; if (left <= 0) { clearInterval(t); $refs.roundform.requestSubmit(); } }, 1000)">
+  <div class="boss-timer">
+    ⏱ <strong x-text="Math.floor(left/60) + ':' + String(left%60).padStart(2,'0')"></strong>
+    <span class="tag">{{ "🧩 Concept" if round.kind == "mcq" else "💻 Coding" }}</span>
+  </div>
+
+  <section class="prompt">{{ prompt_html | safe }}</section>
+
+  <form x-ref="roundform" hx-post="/arena/answer/{{ session.id }}"
+        hx-target="#arena-round" hx-swap="innerHTML"
+        hx-indicator="#arena-spinner">
+    <input type="hidden" name="started_at" value="{{ started_at }}">
+
+    {% if round.kind == "mcq" %}
+    <div class="arena-options">
+      {% for opt in options %}
+      <button type="submit" name="answer" value="{{ loop.index0 }}" class="arena-option">
+        {{ opt }}
+      </button>
+      {% endfor %}
+    </div>
+    <p class="muted arena-hint">Pick an answer, or let the clock run out to skip.</p>
+    {% else %}
+    <textarea name="answer" class="editor" rows="12" spellcheck="false"
+              onkeydown="if(event.key==='Tab'){event.preventDefault();
+                const s=this.selectionStart;
+                this.value=this.value.slice(0,s)+'    '+this.value.slice(this.selectionEnd);
+                this.selectionStart=this.selectionEnd=s+4;}">{{ starter_code }}</textarea>
+    <div class="submit-row">
+      <button type="submit" class="primary-btn">Submit &amp; Run Tests</button>
+      <span id="arena-spinner" class="htmx-indicator muted">grading…</span>
+    </div>
+    {% endif %}
+  </form>
+</div>

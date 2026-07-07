@@ -204,6 +204,46 @@ class AchievementEarned(Base):
     earned_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
 
+class InterviewSession(Base):
+    """One Mock Interview Arena run: a timed, randomized mix of MCQ and coding
+    rounds. Immutable once ``finished_at`` is set; ``score`` is recomputed from
+    its rounds rather than incremented, in keeping with the ledger convention."""
+
+    __tablename__ = "interview_sessions"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    finished_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    difficulty: Mapped[str] = mapped_column(String)  # 'standard' | 'expert'
+    num_questions: Mapped[int] = mapped_column(Integer)
+    score: Mapped[int] = mapped_column(Integer, default=0)
+    total: Mapped[int] = mapped_column(Integer, default=0)
+
+    rounds: Mapped[list["InterviewRound"]] = relationship(
+        back_populates="session", order_by="InterviewRound.order"
+    )
+
+
+class InterviewRound(Base):
+    """A single question within an InterviewSession. ``ref_id`` points at a
+    QuizQuestion (kind='mcq') or a Challenge (kind='coding'); grading fills in
+    ``answer``/``correct``/``elapsed_seconds``."""
+
+    __tablename__ = "interview_rounds"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    session_id: Mapped[int] = mapped_column(ForeignKey("interview_sessions.id"))
+    order: Mapped[int] = mapped_column(Integer)
+    kind: Mapped[str] = mapped_column(String)  # 'mcq' | 'coding'
+    ref_id: Mapped[int] = mapped_column(Integer)
+    answer: Mapped[str | None] = mapped_column(Text, nullable=True)
+    correct: Mapped[bool] = mapped_column(Boolean, default=False)
+    points: Mapped[int] = mapped_column(Integer, default=1)
+    elapsed_seconds: Mapped[float | None] = mapped_column(Float, nullable=True)
+
+    session: Mapped[InterviewSession] = relationship(back_populates="rounds")
+
+
 class Settings(Base):
     __tablename__ = "settings"
 
