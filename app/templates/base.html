@@ -13,6 +13,9 @@
 <body>
   <header class="topbar">
     <a class="brand" href="/">🐍 PyRealms</a>
+    {% if progress is defined and progress.level >= 8 %}
+    <a class="nav-link arena-link" href="/arena" title="Mock Interview Arena">🎤 Arena</a>
+    {% endif %}
     {% include "partials/hud.html" %}
   </header>
 

@@ -333,3 +333,53 @@ button.quiz-opt:hover { border-color: var(--accent-2); background: #262c52; }
 @keyframes fall {
   to { transform: translateY(110vh) rotate(720deg); opacity: 0.7; }
 }
+
+/* Mock Interview Arena */
+.nav-link { color: var(--text); font-weight: 600; }
+.arena-link { color: var(--accent); }
+.arena-config {
+  display: flex; align-items: flex-end; gap: 1rem; flex-wrap: wrap;
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 12px; padding: 1rem 1.2rem; margin: 1.2rem 0 0.4rem;
+}
+.arena-config label { display: flex; flex-direction: column; gap: 0.3rem; font-size: 0.85rem; color: var(--muted); }
+.arena-config select {
+  background: var(--panel-2); color: var(--text); border: 1px solid var(--border);
+  border-radius: 8px; padding: 0.45rem 0.6rem; font-size: 1rem;
+}
+.arena-hint { font-size: 0.85rem; margin-top: 0.4rem; }
+.arena-history { margin-top: 2rem; }
+.arena-table { width: 100%; border-collapse: collapse; }
+.arena-table th, .arena-table td {
+  text-align: left; padding: 0.5rem 0.6rem; border-bottom: 1px solid var(--border);
+}
+.arena-table th { color: var(--muted); font-weight: 600; font-size: 0.85rem; }
+.arena-progress { margin: 0.5rem 0 1rem; display: flex; flex-direction: column; gap: 0.4rem; }
+.arena-round-card {
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 12px; padding: 1.2rem;
+}
+.arena-flash {
+  border-radius: 10px; padding: 0.6rem 0.9rem; margin-bottom: 1rem; font-weight: 600;
+  border: 1px solid var(--border);
+}
+.arena-flash.ok { color: var(--pass); border-color: var(--pass); background: rgba(62,207,142,0.08); }
+.arena-flash.no { color: var(--fail); border-color: var(--fail); background: rgba(255,107,107,0.08); }
+.arena-options { display: flex; flex-direction: column; gap: 0.6rem; margin: 1rem 0 0.4rem; }
+.arena-option {
+  text-align: left; background: var(--panel-2); color: var(--text);
+  border: 1px solid var(--border); border-radius: 10px;
+  padding: 0.7rem 0.9rem; font-size: 1rem; cursor: pointer; transition: border-color 0.15s;
+}
+.arena-option:hover { border-color: var(--accent-2); }
+.arena-result-card {
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 12px; padding: 1.4rem;
+}
+.arena-score { font-size: 1.4rem; margin: 0.4rem 0 1rem; }
+.arena-breakdown { list-style: none; padding: 0; margin: 1rem 0; display: flex; flex-direction: column; gap: 0.35rem; }
+.arena-breakdown li {
+  padding: 0.45rem 0.7rem; border-radius: 8px; border: 1px solid var(--border); font-size: 0.9rem;
+}
+.arena-breakdown li.ok { border-left: 3px solid var(--pass); }
+.arena-breakdown li.no { border-left: 3px solid var(--fail); }
