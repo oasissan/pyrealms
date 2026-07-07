@@ -1160,7 +1160,7 @@ there's no match, the idiomatic 'not found' sentinel.
             "slug": "async-pipeline",
             "title": "Build: An Async Pipeline",
             "description": "Async generators and bounded-concurrency processing.",
-            "badge": {"id": "flow-master", "name": "Flow Master", "icon": "🌊"},
+            "badge": {"id": "stream-shepherd", "name": "Stream Shepherd", "icon": "🌊"},
             "quiz": [
                 {
                     "prompt_md": "What is an **async generator**?",

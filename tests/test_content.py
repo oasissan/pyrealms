@@ -8,7 +8,7 @@ model answer stops matching its tests, CI goes red.
 
 import pytest
 
-from app.content import ALL_TIERS, iter_missions, solution_code
+from app.content import ALL_TIERS, META_ACHIEVEMENTS, iter_missions, solution_code
 from app.grading import run_hidden_tests
 
 MISSIONS = [
@@ -63,3 +63,17 @@ def test_visible_example_tests_are_consistent(mission):
 def test_all_slugs_unique():
     slugs = [m["slug"] for m in iter_missions()]
     assert len(slugs) == len(set(slugs)), "duplicate mission slug"
+
+
+def test_all_badge_ids_unique():
+    """badge_id is UNIQUE in the DB — a collision across quests/meta would make
+    seeding an AchievementRule blow up. Catch it in content, not at runtime."""
+    badge_ids = [
+        q["badge"]["id"]
+        for t in ALL_TIERS
+        for q in t["quests"]
+        if q.get("badge")
+    ]
+    badge_ids += [m["badge_id"] for m in META_ACHIEVEMENTS]
+    dupes = {b for b in badge_ids if badge_ids.count(b) > 1}
+    assert not dupes, f"duplicate badge_id(s): {dupes}"
